@@ -13,6 +13,14 @@ provider "aws" {
   region  = "eu-west-1"
 }
 
+//attach_lambda_sns_invocation_and_logs_policy
+locals{
+  lambdaPolicies = {
+    iam_policy_invoke_for_lambda = aws_iam_policy.iam_policy_invoke_for_lambda.arn,
+    lambda_logging = aws_iam_policy.lambda_logging.arn, 
+}
+}
+
 resource "aws_sqs_queue" "cart_queue" {
   name = var.sqs_name
 }
@@ -117,10 +125,9 @@ EOF
 //}
 
 resource "aws_iam_role_policy_attachment" "attach_lambda_sns_invocation_and_logs_policy" {
-   for_each = toset([
-    "${aws_iam_policy.iam_policy_invoke_for_lambda.arn}",
-    "${aws_iam_policy.lambda_logging.arn}", 
-  ])
+  for_each = toset([
+    aws_iam_policy.iam_policy_invoke_for_lambda.arn,
+    aws_iam_policy.lambda_logging.arn,])
   role       = aws_iam_role.lambda_role.name
   policy_arn = each.key
 }
