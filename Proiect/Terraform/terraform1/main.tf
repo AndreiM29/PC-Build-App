@@ -9,8 +9,12 @@ terraform {
   required_version = ">= 1.2.0"
 }
 
+variable "aws_region" {
+  default = "eu-west-1"
+}
+
 provider "aws" {
-  region = "eu-west-1"
+  region = var.aws_region
 }
 
 locals {
@@ -73,6 +77,7 @@ resource "aws_iam_role" "lambda_role" {
 }
 EOF
 }
+
 resource "aws_iam_policy" "lambda_logging" {
   name        = "lambda_logging"
   path        = "/"
@@ -222,5 +227,75 @@ resource "aws_ecs_cluster" "ecs_cluster" {
   setting {
     name  = "containerInsights"
     value = "enabled"
+  }
+}
+resource "aws_ecs_task_definition" "test" {
+  family                   = "test"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = 1024
+  memory                   = 2048
+  container_definitions    = <<TASK_DEFINITION
+[
+  {
+    "name": "nginx",
+    "image": "nginx:latest",
+    "cpu": 1024,
+    "memory": 2048,
+    "essential": true
+  }
+]
+TASK_DEFINITION
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
+}
+#Initialize VPC
+
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = "Main"
+  }
+}
+
+#Subnets
+
+resource "aws_subnet" "mysubnet_private_1" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+
+  tags = {
+    Name = "mysubnet.private.1"
+  }
+}
+
+resource "aws_security_group" "allow_tls" {
+  name        = "mysecuritygroup"
+  description = "Allow TLS inbound traffic"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description      = "TLS from VPC"
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = [aws_vpc.main.cidr_block]
+    # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    # ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "mysecuritygroup"
   }
 }

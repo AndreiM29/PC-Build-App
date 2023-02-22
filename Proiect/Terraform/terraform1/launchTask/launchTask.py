@@ -26,7 +26,7 @@ securityGroups = ec2Client.describe_security_groups(
     Filters=[
         {
             'Name':'tag:Name',
-            'Values': ['mytask']
+            'Values': ['mysecuritygroup']
         }
     ]
 )
@@ -64,7 +64,8 @@ def lambda_handler(event, context):
     else:
         fullResponse = ecsClient.run_task(
             cluster = ecs_cluster, #willBe: ecs_cluster
-            taskDefinition = '{}-mytask'.format(ecs_cluster),
+            taskDefinition = 'test',
+            #taskDefinition = '{}-mytask'.format(ecs_cluster),
             launchType = 'FARGATE',
             enableECSManagedTags=True,
             #group = 'service:myservice',
