@@ -164,6 +164,12 @@ resource "aws_iam_role_policy_attachment" "attach_policies" {
   policy_arn = each.key
 }
 
+data "archive_file" "zip_the_python_code_first_lambda" {
+  type        = "zip"
+  source_dir  = "${path.module}/firstLambda"
+  output_path = "${path.module}/python/first-lambda.zip"
+}
+
 data "archive_file" "zip_the_python_code" {
   type        = "zip"
   source_dir  = "${path.module}/launchTask"
@@ -299,3 +305,80 @@ resource "aws_security_group" "allow_tls" {
     Name = "mysecuritygroup"
   }
 }
+
+data "aws_caller_identity" "current" {}
+
+output "aws_account_id" {
+  value = "${data.aws_caller_identity.current.account_id}"
+}
+
+
+/*Cognito User Pool*/
+
+
+resource "aws_cognito_user_pool" "maf_user_pool" {
+  name = "maf_user_pool"
+
+  account_recovery_setting {
+    recovery_mechanism {
+      name     = "verified_email"
+      priority = 1
+    }
+  }
+}
+
+resource "aws_cognito_user_pool_client" "maf_client" {
+  name = "external_app"
+  user_pool_id = aws_cognito_user_pool.maf_user_pool.id
+  explicit_auth_flows = [
+    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_USER_SRP_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
+}
+
+/*API Gateway*/
+
+resource "aws_apigatewayv2_api" "maf_api" {
+  name = "maf_api"
+  protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_authorizer" "auth" {
+  api_id           = aws_apigatewayv2_api.maf_api.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "cognito-authorizer"
+
+  jwt_configuration {
+    audience = [aws_cognito_user_pool_client.maf_client.id]
+    issuer   = "https://${aws_cognito_user_pool.maf_user_pool.endpoint}"
+  }
+}
+
+resource "aws_apigatewayv2_integration" "int" {
+  api_id           = aws_apigatewayv2_api.maf_api.id
+  integration_type = "AWS_PROXY"
+  connection_type = "INTERNET"
+  integration_method = "POST"
+  integration_uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.id}:function:${var.lambda_name}/invocations"
+}
+
+resource "aws_apigatewayv2_route" "route" {
+  api_id    = aws_apigatewayv2_api.maf_api.id
+  route_key = "GET /example"
+  target = "integrations/${aws_apigatewayv2_integration.int.id}"
+  authorization_type = "JWT"
+  authorizer_id = aws_apigatewayv2_authorizer.auth.id
+}
+
+/*First Backend function contacted by API*/
+  resource "aws_lambda_function" "maf_lambda_function" {
+    filename      = "${path.module}/python/first-lambda.zip"
+    function_name = "maf_first_lambda"
+    role          = aws_iam_role.lambda_role.arn
+    handler       = "firstLambda.lambda_handler"
+    runtime       = "python3.8"
+    source_code_hash = data.archive_file.zip_the_python_code_first_lambda.output_base64sha256 # for updates
+    depends_on    = [aws_iam_role_policy_attachment.attach_policies]
+  } 
