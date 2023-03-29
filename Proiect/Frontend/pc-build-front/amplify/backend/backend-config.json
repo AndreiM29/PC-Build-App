@@ -1,0 +1,11 @@
+{
+  "auth": {
+    "pcbuildfront57f7e0dd": {
+      "service": "Cognito",
+      "serviceType": "imported",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  }
+}
