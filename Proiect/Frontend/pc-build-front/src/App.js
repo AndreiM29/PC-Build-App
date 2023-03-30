@@ -1,24 +1,59 @@
-import { Amplify } from 'aws-amplify';
+import { Amplify, Auth } from 'aws-amplify';
+import { useState, useEffect } from 'react';
 
 import { withAuthenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
+import './App.css';
 
 import awsExports from './aws-exports';
+import { API } from 'aws-amplify';
 Amplify.configure(awsExports);
 
+
 function App({ signOut, user }) {
+
+  const [foo, setFoo] = useState('');
+  const [result, setResult] = useState(null);
+  const [token, setAccessToken] = useState('');
+
+  useEffect(() => {
+    Auth.currentSession().then(res => {
+      let accessToken = res.getAccessToken();
+      let jwt = accessToken.getJwtToken();
+      setAccessToken(jwt);
+      console.log(jwt);
+      console.log(accessToken);
+    }).catch(error => console.error(error));
+    setFoo('foo value');
+  }, []);
+
+
+
+  useEffect(() => {
+    if (foo === 'foo value') {
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/stage1/example', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error(error))
+    }
+  })
+
   return (
     <>
-      <h1>Hello {user.username}</h1>
+      <h1>Hi {user.username}</h1>
       <button onClick={signOut}>Sign out</button>
     </>
   );
 }
-
+//Fa sa iaceva de la lambda prin API+Scris
 export default withAuthenticator(App);
 
 /*import logo from './logo.svg';
-import './App.css';
 import { Amplify, Auth } from 'aws-amplify';
 import awsconfig from './aws-exports';
 Amplify.configure(awsconfig);

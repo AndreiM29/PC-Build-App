@@ -111,7 +111,10 @@ resource "aws_iam_policy" "iam_policy_invoke_for_lambda" {
 {
   "Statement":[
     {"Condition":
-      {"ArnLike":{"AWS:SourceArn":"arn:aws:sns:*"}},
+      {"ArnLike":{"AWS:SourceArn": [
+            "arn:aws:sns:*",
+            "arn:aws:execute-api:*:*:*/*/*"
+          ]}},
       "Resource":"arn:aws:lambda:*",
       "Action":"lambda:invokeFunction",
       "Effect":"Allow"
@@ -342,6 +345,12 @@ resource "aws_cognito_user_pool_client" "maf_client" {
 resource "aws_apigatewayv2_api" "maf_api" {
   name = "maf_api"
   protocol_type = "HTTP"
+  cors_configuration {
+    allow_origins = ["*"]
+    allow_headers = ["Authorization"]
+    allow_methods = ["GET"]
+    max_age       = 300
+  }
 }
 
 resource "aws_apigatewayv2_authorizer" "auth" {
@@ -361,7 +370,7 @@ resource "aws_apigatewayv2_integration" "int" {
   integration_type = "AWS_PROXY"
   connection_type = "INTERNET"
   integration_method = "POST"
-  integration_uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.id}:function:${var.lambda_name}/invocations"
+  integration_uri = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:${data.aws_caller_identity.current.id}:function:${var.lambda_name}/invocations"
 }
 
 resource "aws_apigatewayv2_route" "route" {
@@ -373,7 +382,7 @@ resource "aws_apigatewayv2_route" "route" {
 }
 
 /*First Backend function contacted by API*/
-  resource "aws_lambda_function" "maf_lambda_function" {
+  resource "aws_lambda_function" "maf_first_lambda" {
     filename      = "${path.module}/python/first-lambda.zip"
     function_name = "maf_first_lambda"
     role          = aws_iam_role.lambda_role.arn
