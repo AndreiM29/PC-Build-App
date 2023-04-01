@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.16"
+      version = "~> 4.61"
     }
   }
 
@@ -380,6 +380,25 @@ resource "aws_apigatewayv2_route" "route" {
   authorization_type = "JWT"
   authorizer_id = aws_apigatewayv2_authorizer.auth.id
 }
+
+/*deployment */
+
+resource "aws_cloudwatch_log_group" "api_logs" {
+  name = "/aws/api-gateway/ma_api/development"
+}
+
+resource "aws_apigatewayv2_stage" "development" {
+  api_id = aws_apigatewayv2_api.maf_api.id
+  name   = "development"
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_logs.arn
+        format= "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"user\":\"$context.identity.user\",\"method\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}"
+   }
+}
+
+
 
 /*First Backend function contacted by API*/
   resource "aws_lambda_function" "maf_first_lambda" {

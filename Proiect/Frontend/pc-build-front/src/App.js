@@ -31,7 +31,7 @@ function App({ signOut, user }) {
 
   useEffect(() => {
     if (foo === 'foo value') {
-      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/stage1/example', {
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/example', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
