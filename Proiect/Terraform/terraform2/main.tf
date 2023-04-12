@@ -101,6 +101,27 @@ resource "aws_iam_policy" "lambda_logging" {
 EOF
 }
 
+resource "aws_iam_policy" "access_db_for_lambda" {
+  name = "access_db_for_lambda"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:dynamodb:*:*:table/*"
+      }
+    ]
+  })
+}
 
 resource "aws_iam_policy" "iam_policy_invoke_for_lambda" {
 
@@ -162,7 +183,8 @@ resource "aws_iam_role_policy_attachment" "attach_policies" {
   for_each = toset([
     aws_iam_policy.iam_policy_invoke_for_lambda.arn,
   aws_iam_policy.lambda_logging.arn,
-  aws_iam_policy.lambda_vpc_access.arn, ])
+  aws_iam_policy.lambda_vpc_access.arn, 
+  aws_iam_policy.access_db_for_lambda.arn])
   role       = aws_iam_role.lambda_role.name
   policy_arn = each.key
 }
@@ -348,7 +370,7 @@ resource "aws_apigatewayv2_api" "maf_api" {
   cors_configuration {
     allow_origins = ["*"]
     allow_headers = ["Authorization"]
-    allow_methods = ["GET"]
+    allow_methods = ["GET","POST"]
     max_age       = 300
   }
 }
@@ -375,7 +397,7 @@ resource "aws_apigatewayv2_integration" "int" {
 
 resource "aws_apigatewayv2_route" "route" {
   api_id    = aws_apigatewayv2_api.maf_api.id
-  route_key = "GET /example"
+  route_key = "POST /configuration"
   target = "integrations/${aws_apigatewayv2_integration.int.id}"
   authorization_type = "JWT"
   authorizer_id = aws_apigatewayv2_authorizer.auth.id
@@ -410,3 +432,236 @@ resource "aws_apigatewayv2_stage" "development" {
     source_code_hash = data.archive_file.zip_the_python_code_first_lambda.output_base64sha256 # for updates
     depends_on    = [aws_iam_role_policy_attachment.attach_policies]
   } 
+
+  //*AAAAAAAAAAAAAAAAAAAAAAAAAdisper*/
+  resource "aws_lambda_permission" "api_gw" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.maf_first_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.maf_api.execution_arn}/*/*"
+}
+
+
+//dynamodb table
+
+resource "aws_dynamodb_table" "motherboards-inventory" {
+  name           = "MotherboardsInventory"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+
+  attribute {
+    name = "Available"
+    type = "N"
+  }
+
+  global_secondary_index {
+    name               = "AvailableIndex"
+    hash_key           = "Available"
+    projection_type    = "ALL"
+    read_capacity      = 20
+    write_capacity     = 20
+  }
+
+  tags = {
+    Name        = "motherboards-inventory"
+    Environment = "production"
+  }
+}
+resource "aws_dynamodb_table" "cpus-inventory" {
+  name           = "CPUsInventory"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+
+  attribute {
+    name = "Available"
+    type = "N"
+  }
+
+  tags = {
+    Name        = "cpus-inventory"
+    Environment = "production"
+  }
+
+  global_secondary_index {
+    name               = "AvailableIndex"
+    hash_key           = "Available"
+    projection_type    = "ALL"
+    read_capacity      = 20
+    write_capacity     = 20
+  }
+}
+
+resource "aws_dynamodb_table" "ram-inventory" {
+  name           = "RAMInventory"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+
+  attribute {
+    name = "Available"
+    type = "N"
+  }
+
+  tags = {
+    Name        = "ram-inventory"
+    Environment = "production"
+  }
+
+  global_secondary_index {
+    name               = "AvailableIndex"
+    hash_key           = "Available"
+    projection_type    = "ALL"
+    read_capacity      = 20
+    write_capacity     = 20
+  }
+}
+
+resource "aws_dynamodb_table" "storage-drives-inventory" {
+  name           = "StorageDrivesInventory"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+
+  attribute {
+    name = "Available"
+    type = "N"
+  }
+
+  tags = {
+    Name        = "storage-drives-inventory"
+    Environment = "production"
+  }
+
+  global_secondary_index {
+    name               = "AvailableIndex"
+    hash_key           = "Available"
+    projection_type    = "ALL"
+    read_capacity      = 20
+    write_capacity     = 20
+  }
+}
+
+resource "aws_dynamodb_table" "cases-inventory" {
+  name           = "CasesInventory"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+
+  attribute {
+    name = "Available"
+    type = "N"
+  }
+
+  global_secondary_index {
+    name = "AvailableIndex"
+    hash_key = "Available"
+    projection_type = "ALL"
+    write_capacity = 20
+    read_capacity = 20
+  }
+
+
+  tags = {
+    Name        = "cases-inventory"
+    Environment = "production"
+  }
+}
+
+resource "aws_dynamodb_table" "power-supplies-inventory" {
+  name           = "PowerSuppliesInventory"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+
+  attribute {
+    name = "Available"
+    type = "N"
+  }
+
+  global_secondary_index {
+    name = "AvailableIndex"
+    hash_key = "Available"
+    projection_type = "ALL"
+    write_capacity = 20
+    read_capacity = 20
+  }
+
+
+  tags = {
+    Name        = "power-supplies-inventory"
+    Environment = "production"
+  }
+}
+
+resource "aws_dynamodb_table" "gpus-inventory" {
+  name           = "GPUsInventory"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+
+  attribute {
+    name = "Available"
+    type = "N"
+  }
+
+  tags = {
+    Name        = "gpus-inventory"
+    Environment = "production"
+  }
+
+  global_secondary_index {
+    name               = "AvailableIndex"
+    hash_key           = "Available"
+    projection_type    = "ALL"
+    read_capacity      = 20
+    write_capacity     = 20
+  }
+}
+
+//DynamoDB tables

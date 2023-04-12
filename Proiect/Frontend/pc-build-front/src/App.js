@@ -15,7 +15,6 @@ function App({ signOut, user }) {
   const [foo, setFoo] = useState('');
   const [result, setResult] = useState(null);
   const [token, setAccessToken] = useState('');
-
   useEffect(() => {
     Auth.currentSession().then(res => {
       let accessToken = res.getAccessToken();
@@ -31,9 +30,10 @@ function App({ signOut, user }) {
 
   useEffect(() => {
     if (foo === 'foo value') {
-      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/example', {
-        method: 'GET',
-        headers: {
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/configuration', {
+        method: 'POST',
+        body: "{\"pc_configuration\": {\"cpu_model\": \"Intel Core i9\",\"motherboard_model\": \"ASUS Prime Z390-A\",\"gpu_model\": \"NVIDIA GeForce RTX 3080\",\"ram_model\": \"Corsair Vengeance LPX 16GB\",\"storage_drive_model\": \"Samsung 970 EVO Plus 1TB\",\"case_model\": \"NZXT H510i\",\"powersupply_model\": \"EVGA SuperNOVA 850 G3\"}}"
+        , headers: {
           'Authorization': `Bearer ${token}`
         }
       })
