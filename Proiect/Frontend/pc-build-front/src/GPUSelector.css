@@ -1,0 +1,52 @@
+/* gpuSelector.css */
+
+.gpu-selector-container {
+  text-align: center;
+  padding: 32px;
+  background-color: #f2f2f2;
+  border-radius: 8px;
+  width: 300px;
+  margin: 0 auto;
+}
+
+.gpu-selector-title {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.gpu-selector-options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.gpu-selector-button {
+  margin: 0 16px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+}
+
+.gpu-selector-button:hover {
+  background-color: #0056b3;
+}
+
+.gpu-selector-set-button {
+  cursor: pointer;
+  background-color: #28a745;
+  color: #fff;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.gpu-selector-set-button:hover {
+  background-color: #1b832f;
+}
+
