@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import "./GPUSelector.css"; // Import the CSS file
+import "./Selector.css"; // Import the CSS file
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const GPUSelector = () => {
   const [selectedGPU, setSelectedGPU] = useState("");
@@ -21,16 +24,25 @@ const GPUSelector = () => {
     const selectedGPU = event.target.value;
     setSelectedGPU(selectedGPU);
     setCurrentIndex(gpuOptions.indexOf(selectedGPU));
+    //localStorage.setItem("selectedGPU", selectedGPU);
+  };
+
+  const addGPUToConfig = (event) => {
+    const selectedGPU = event.target.value;
+    setSelectedGPU(selectedGPU);
+    setCurrentIndex(gpuOptions.indexOf(selectedGPU));
     localStorage.setItem("selectedGPU", selectedGPU);
+    const message = selectedGPU + ' added to current Configuration!'
+    toast.success(message);
   };
 
   return (
-    <div className="gpu-selector-container">
-      <Typography variant="h4" className="gpu-selector-title">
+    <div className="selector-container">
+      <Typography variant="h4" className="selector-title">
         Select your GPU
       </Typography>
       <Typography variant="body1">Selected GPU: {selectedGPU}</Typography>
-      <div className="gpu-selector-options">
+      <div className="selector-options">
         <select value={selectedGPU} onChange={handleGPUSelect}>
           {gpuOptions.map((option) => (
             <option key={option} value={option}>
@@ -42,7 +54,7 @@ const GPUSelector = () => {
       <Button
         variant="contained"
         color="secondary"
-        onClick={() => handleGPUSelect({ target: { value: selectedGPU } })}
+        onClick={() => addGPUToConfig({ target: { value: selectedGPU } })}
       >
         Add GPU to configuration
       </Button>

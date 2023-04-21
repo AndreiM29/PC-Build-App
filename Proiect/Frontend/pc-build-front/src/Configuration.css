@@ -1,0 +1,19 @@
+.config-display {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+  }
+  
+  .config-display h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .config-display p {
+    margin: 0;
+  }
+  
+  .config-display .send-button {
+    margin-top: 10px;
+  }

@@ -1,6 +1,6 @@
-/* MotherboardSelector.css */
+/* ramSelector.css */
 
-.motherboard-selector-container {
+.selector-container {
   text-align: center;
   padding: 32px;
   background-color: #f2f2f2;
@@ -9,19 +9,19 @@
   margin: 0 auto;
 }
 
-.motherboard-selector-title {
+.selector-title {
   font-size: 24px;
   margin-bottom: 16px;
 }
 
-.motherboard-selector-options {
+.selector-options {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 24px;
 }
 
-.motherboard-selector-button {
+.selector-button {
   margin: 0 16px;
   cursor: pointer;
   background-color: #007bff;
@@ -31,11 +31,11 @@
   border-radius: 4px;
 }
 
-.motherboard-selector-button:hover {
+.selector-button:hover {
   background-color: #0056b3;
 }
 
-.motherboard-selector-set-button {
+.selector-set-button {
   cursor: pointer;
   background-color: #28a745;
   color: #fff;
@@ -46,7 +46,7 @@
   transition: background-color 0.3s ease;
 }
 
-.motherboard-selector-set-button:hover {
+.selector-set-button:hover {
   background-color: #1b832f;
 }
 

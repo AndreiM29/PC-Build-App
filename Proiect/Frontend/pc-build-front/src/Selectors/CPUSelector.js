@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import "./CPUSelector.css"; // Import the CSS file
+import "./Selector.css"; // Import the CSS file
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const CPUSelector = () => {
   const [selectedCPU, setSelectedCPU] = useState("");
@@ -24,13 +27,22 @@ const CPUSelector = () => {
     localStorage.setItem("selectedCPU", selectedCPU);
   };
 
+  const addCPUToConfig = (event) => {
+    const selectedCPU = event.target.value;
+    setSelectedCPU(selectedCPU);
+    setCurrentIndex(cpuOptions.indexOf(selectedCPU));
+    localStorage.setItem("selectedCPU", selectedCPU);
+    const message = selectedCPU + ' added to current Configuration!'
+    toast.success(message);
+  };
+
   return (
-    <div className="cpu-selector-container">
-      <Typography variant="h4" className="cpu-selector-title">
+    <div className="selector-container">
+      <Typography variant="h4" className="selector-title">
         Select your CPU
       </Typography>
       <Typography variant="body1">Selected CPU: {selectedCPU}</Typography>
-      <div className="cpu-selector-options">
+      <div className="selector-options">
         <select value={selectedCPU} onChange={handleCPUSelect}>
           {cpuOptions.map((option) => (
             <option key={option} value={option}>
@@ -42,7 +54,7 @@ const CPUSelector = () => {
       <Button
         variant="contained"
         color="secondary"
-        onClick={() => handleCPUSelect({ target: { value: selectedCPU } })}
+        onClick={() => addCPUToConfig({ target: { value: selectedCPU } })}
       >
         Add CPU to configuration
       </Button>

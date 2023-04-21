@@ -9,18 +9,21 @@ import Menu from './Menu'; // Import the Menu component
 import Button from "@material-ui/core/Button";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import Box from "@material-ui/core/Box";
-import CPUSelector from './CPUSelector';
-import GPUSelector from './GPUSelector';
-import RAMSelector from './RAMSelector';
+import CPUSelector from './Selectors/CPUSelector';
+import GPUSelector from './Selectors/GPUSelector';
+import RAMSelector from './Selectors/RAMSelector';
 
 import { BrowserRouter as Router, Route, NavLink, Routes } from "react-router-dom";
 import awsExports from './aws-exports';
-import MotherboardSelector from "./MotherboardSelector";
-import CaseSelector from "./CaseSelector";
+import MotherboardSelector from "./Selectors/MotherboardSelector";
+import CaseSelector from "./Selectors/CaseSelector";
 import HomePage from "./HomePage";
 import { API } from 'aws-amplify';
-import StorageDriveSelector from './StorageDriveSelector';
-import PowerSupplySelector from './PowerSupplySelector';
+import StorageDriveSelector from './Selectors/StorageDriveSelector';
+import PowerSupplySelector from './Selectors/PowerSupplySelector';
+import ConfigurationDisplay from './Configuration';
+
+import { ToastContainer, toast } from 'react-toastify';
 
 Amplify.configure(awsExports);
 
@@ -73,6 +76,7 @@ function App({ signOut, user }) {
 
   return (
     <>
+    <ToastContainer />
       <h1>Hi {user.username}</h1>
       <Box
          position="fixed"
@@ -104,6 +108,7 @@ function App({ signOut, user }) {
             <Route path="/ram" element={<RAMSelector/>} />
             <Route path="/storagedrive" element={<StorageDriveSelector/>} />
             <Route path="/powersupply" element={<PowerSupplySelector/>} />
+            <Route path="/configuration" element={<ConfigurationDisplay/>} />
             {/* Add more routes for other pages/components as needed */}
           </Routes>
         </div>

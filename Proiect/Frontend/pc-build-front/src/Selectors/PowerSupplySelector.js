@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import "./CaseSelector.css"; // Import the CSS file
+import "./Selector.css"; // Import the CSS file
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const PowerSupplySelector = () => {
   const [selectedPowerSupply, setSelectedPowerSupply] = useState("");
@@ -24,13 +27,22 @@ const PowerSupplySelector = () => {
     localStorage.setItem("selectedPowerSupply", selectedPowerSupply);
   };
 
+  const addPowerSupplyToConfig = (event) => {
+    const selectedPowerSupply = event.target.value;
+    setSelectedPowerSupply(selectedPowerSupply);
+    setCurrentIndex(powerSupplyOptions.indexOf(selectedPowerSupply));
+    localStorage.setItem("selectedPowerSupply", selectedPowerSupply);
+    const message = selectedPowerSupply + ' added to current Configuration!'
+    toast.success(message);
+  };
+
   return (
-    <div className="case-selector-container">
-      <Typography variant="h4" className="case-selector-title">
+    <div className="selector-container">
+      <Typography variant="h4" className="selector-title">
         Select your Power Supply
       </Typography>
       <Typography variant="body1">Selected Power Supply: {selectedPowerSupply}</Typography>
-      <div className="case-selector-options">
+      <div className="selector-options">
         <select value={selectedPowerSupply} onChange={handlePowerSupplySelect}>
           {powerSupplyOptions.map((option) => (
             <option key={option} value={option}>
@@ -42,7 +54,7 @@ const PowerSupplySelector = () => {
       <Button
         variant="contained"
         color="secondary"
-        onClick={() => handlePowerSupplySelect({ target: { value: selectedPowerSupply } })}
+        onClick={() => addPowerSupplyToConfig({ target: { value: selectedPowerSupply } })}
       >
         Add Power Supply to configuration
       </Button>

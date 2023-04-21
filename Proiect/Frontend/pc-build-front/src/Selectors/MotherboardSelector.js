@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import "./MotherboardSelector.css"; // Import the CSS file
+import "./Selector.css"; // Import the CSS file
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const MotherboardSelector = () => {
   const [selectedMotherboard, setSelectedMotherboard] = useState("");
@@ -24,13 +27,22 @@ const MotherboardSelector = () => {
     localStorage.setItem("selectedMotherboard", motherboard);
   };
 
+  const addMotherboardToConfig = (event) => {
+    const selectedMotherboard = event.target.value;
+    setSelectedMotherboard(selectedMotherboard);
+    setCurrentIndex(motherboardOptions.indexOf(selectedMotherboard));
+    localStorage.setItem("selectedMotherboard", selectedMotherboard);
+    const message = selectedMotherboard + ' added to current Configuration!'
+    toast.success(message);
+  };
+
   return (
-    <div className="motherboard-selector-container">
-      <Typography variant="h4" className="motherboard-selector-title">
+    <div className="selector-container">
+      <Typography variant="h4" className="selector-title">
         Select your Motherboard
       </Typography>
       <Typography variant="body1">Selected Motherboard: {selectedMotherboard}</Typography>
-      <div className="motherboard-selector-options">
+      <div className="selector-options">
         <select value={selectedMotherboard} onChange={handleMotherboardSelect}>
           {motherboardOptions.map((option) => (
             <option key={option} value={option}>
@@ -42,7 +54,7 @@ const MotherboardSelector = () => {
       <Button
         variant="contained"
         color="secondary"
-        onClick={() => handleMotherboardSelect({ target: { value: selectedMotherboard } })}
+        onClick={() => addMotherboardToConfig({ target: { value: selectedMotherboard } })}
       >
         Add Motherboard to configuration
       </Button>

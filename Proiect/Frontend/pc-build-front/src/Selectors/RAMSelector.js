@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import "./RAMSelector.css"; // Import the CSS file
+import "./Selector.css"; // Import the CSS file
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const RAMSelector = () => {
   const [selectedRAM, setSelectedRAM] = useState("");
@@ -24,13 +27,22 @@ const RAMSelector = () => {
     localStorage.setItem("selectedRAM", selectedRAM);
   };
 
+  const addRAMToConfig = (event) => {
+    const selectedRAM = event.target.value;
+    setSelectedRAM(selectedRAM);
+    setCurrentIndex(ramOptions.indexOf(selectedRAM));
+    localStorage.setItem("selectedRAM", selectedRAM);
+    const message = selectedRAM + ' added to current Configuration!'
+    toast.success(message);
+  };
+
   return (
-    <div className="ram-selector-container">
-      <Typography variant="h4" className="ram-selector-title">
+    <div className="selector-container">
+      <Typography variant="h4" className="selector-title">
         Select your RAM
       </Typography>
       <Typography variant="body1">Selected RAM: {selectedRAM}</Typography>
-      <div className="ram-selector-options">
+      <div className="selector-options">
         <select value={selectedRAM} onChange={handleRAMSelect}>
           {ramOptions.map((option) => (
             <option key={option} value={option}>
@@ -42,7 +54,7 @@ const RAMSelector = () => {
       <Button
         variant="contained"
         color="secondary"
-        onClick={() => handleRAMSelect({ target: { value: selectedRAM } })}
+        onClick={() => addRAMToConfig({ target: { value: selectedRAM } })}
       >
         Add RAM to configuration
       </Button>

@@ -53,6 +53,9 @@ const Menu = () => {
       <li className={classes.menuItem}>
         <NavLink to="/powersupply" activeClassName="active">Power Supply</NavLink>
       </li>
+      <li className={classes.menuItem}>
+        <NavLink to="/configuration" activeClassName="active">Configuration</NavLink>
+      </li>
       {/* Add more menu items as needed */}
     </ul>
   );
