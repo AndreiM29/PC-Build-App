@@ -195,6 +195,12 @@ data "archive_file" "zip_the_python_code_first_lambda" {
   output_path = "${path.module}/python/first-lambda.zip"
 }
 
+data "archive_file" "zip_the_python_code_get_models_by_component_type_lambda" {
+  type        = "zip"
+  source_dir  = "${path.module}/getModels"
+  output_path = "${path.module}/python/get_models_by_component_type_lambda.zip"
+}
+
 data "archive_file" "zip_the_python_code" {
   type        = "zip"
   source_dir  = "${path.module}/launchTask"
@@ -386,7 +392,7 @@ resource "aws_apigatewayv2_authorizer" "auth" {
     issuer   = "https://${aws_cognito_user_pool.maf_user_pool.endpoint}"
   }
 }
-
+//this is for the post configuration:
 resource "aws_apigatewayv2_integration" "int" {
   api_id             = aws_apigatewayv2_api.maf_api.id
   integration_type   = "AWS_PROXY"
@@ -398,6 +404,23 @@ resource "aws_apigatewayv2_integration" "int" {
 resource "aws_apigatewayv2_route" "route" {
   api_id             = aws_apigatewayv2_api.maf_api.id
   route_key          = "POST /configuration"
+  target             = "integrations/${aws_apigatewayv2_integration.int.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.auth.id
+}
+
+//this is for the get models lambda:
+resource "aws_apigatewayv2_integration" "int_get_models" {
+  api_id             = aws_apigatewayv2_api.maf_api.id
+  integration_type   = "AWS_PROXY"
+  connection_type    = "INTERNET"
+  integration_method = "POST"
+  integration_uri    = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:${data.aws_caller_identity.current.id}:function:${var.lambda_get_models}/invocations"
+}
+
+resource "aws_apigatewayv2_route" "route2" {
+  api_id             = aws_apigatewayv2_api.maf_api.id
+  route_key          = "GET /models"
   target             = "integrations/${aws_apigatewayv2_integration.int.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.auth.id
@@ -422,6 +445,16 @@ resource "aws_apigatewayv2_stage" "development" {
 
 
 
+resource "aws_lambda_function" "maf_get_models_by_component_type" {
+  filename         = "${path.module}/python/get_models_by_component_type_lambda.zip"
+  function_name    = "maf_get_models_by_component_type"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "get_models_by_component_type.lambda_handler"
+  runtime          = "python3.8"
+  source_code_hash = data.archive_file.zip_the_python_code_get_models_by_component_type_lambda.output_base64sha256 # for updates
+  depends_on       = [aws_iam_role_policy_attachment.attach_policies]# vezi acilea 
+}
+
 /*First Backend function contacted by API*/
 resource "aws_lambda_function" "maf_first_lambda" {
   filename         = "${path.module}/python/first-lambda.zip"
@@ -433,11 +466,19 @@ resource "aws_lambda_function" "maf_first_lambda" {
   depends_on       = [aws_iam_role_policy_attachment.attach_policies]
 }
 
-//*AAAAAAAAAAAAAAAAAAAAAAAAAdisper*/
 resource "aws_lambda_permission" "api_gw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.maf_first_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.maf_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gw_get_models" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.maf_get_models_by_component_type.function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_apigatewayv2_api.maf_api.execution_arn}/*/*"
