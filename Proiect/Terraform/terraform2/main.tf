@@ -182,8 +182,8 @@ EOF
 resource "aws_iam_role_policy_attachment" "attach_policies" {
   for_each = toset([
     aws_iam_policy.iam_policy_invoke_for_lambda.arn,
-  aws_iam_policy.lambda_logging.arn,
-  aws_iam_policy.lambda_vpc_access.arn, 
+    aws_iam_policy.lambda_logging.arn,
+    aws_iam_policy.lambda_vpc_access.arn,
   aws_iam_policy.access_db_for_lambda.arn])
   role       = aws_iam_role.lambda_role.name
   policy_arn = each.key
@@ -202,17 +202,17 @@ data "archive_file" "zip_the_python_code" {
 }
 
 resource "aws_lambda_function" "terraform_lambda_func" {
-  filename      = "${path.module}/python/launch-ecs.zip"
-  function_name = "Launch_ECS"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "launchTask.lambda_handler"
-  runtime       = "python3.8"
+  filename         = "${path.module}/python/launch-ecs.zip"
+  function_name    = "Launch_ECS"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "launchTask.lambda_handler"
+  runtime          = "python3.8"
   source_code_hash = data.archive_file.zip_the_python_code.output_base64sha256 # for updates
-  depends_on    = [aws_iam_role_policy_attachment.attach_policies]
+  depends_on       = [aws_iam_role_policy_attachment.attach_policies]
   environment {
     variables = {
       ecs_cluster = "ecs_cluster",
-      max_tasks = "5"
+      max_tasks   = "5"
     }
   }
 }
@@ -310,19 +310,19 @@ resource "aws_security_group" "allow_tls" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description      = "TLS from VPC"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = [aws_vpc.main.cidr_block]
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
     # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
   }
 
   egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
     # ipv6_cidr_blocks = ["::/0"]
   }
 
@@ -334,7 +334,7 @@ resource "aws_security_group" "allow_tls" {
 data "aws_caller_identity" "current" {}
 
 output "aws_account_id" {
-  value = "${data.aws_caller_identity.current.account_id}"
+  value = data.aws_caller_identity.current.account_id
 }
 
 
@@ -353,7 +353,7 @@ resource "aws_cognito_user_pool" "maf_user_pool" {
 }
 
 resource "aws_cognito_user_pool_client" "maf_client" {
-  name = "external_app"
+  name         = "external_app"
   user_pool_id = aws_cognito_user_pool.maf_user_pool.id
   explicit_auth_flows = [
     "ALLOW_USER_PASSWORD_AUTH",
@@ -365,12 +365,12 @@ resource "aws_cognito_user_pool_client" "maf_client" {
 /*API Gateway*/
 
 resource "aws_apigatewayv2_api" "maf_api" {
-  name = "maf_api"
+  name          = "maf_api"
   protocol_type = "HTTP"
   cors_configuration {
     allow_origins = ["*"]
     allow_headers = ["Authorization"]
-    allow_methods = ["GET","POST"]
+    allow_methods = ["GET", "POST"]
     max_age       = 300
   }
 }
@@ -388,19 +388,19 @@ resource "aws_apigatewayv2_authorizer" "auth" {
 }
 
 resource "aws_apigatewayv2_integration" "int" {
-  api_id           = aws_apigatewayv2_api.maf_api.id
-  integration_type = "AWS_PROXY"
-  connection_type = "INTERNET"
+  api_id             = aws_apigatewayv2_api.maf_api.id
+  integration_type   = "AWS_PROXY"
+  connection_type    = "INTERNET"
   integration_method = "POST"
-  integration_uri = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:${data.aws_caller_identity.current.id}:function:${var.lambda_name}/invocations"
+  integration_uri    = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:${data.aws_caller_identity.current.id}:function:${var.lambda_name}/invocations"
 }
 
 resource "aws_apigatewayv2_route" "route" {
-  api_id    = aws_apigatewayv2_api.maf_api.id
-  route_key = "POST /configuration"
-  target = "integrations/${aws_apigatewayv2_integration.int.id}"
+  api_id             = aws_apigatewayv2_api.maf_api.id
+  route_key          = "POST /configuration"
+  target             = "integrations/${aws_apigatewayv2_integration.int.id}"
   authorization_type = "JWT"
-  authorizer_id = aws_apigatewayv2_authorizer.auth.id
+  authorizer_id      = aws_apigatewayv2_authorizer.auth.id
 }
 
 /*deployment */
@@ -410,31 +410,31 @@ resource "aws_cloudwatch_log_group" "api_logs" {
 }
 
 resource "aws_apigatewayv2_stage" "development" {
-  api_id = aws_apigatewayv2_api.maf_api.id
-  name   = "development"
+  api_id      = aws_apigatewayv2_api.maf_api.id
+  name        = "development"
   auto_deploy = true
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_logs.arn
-        format= "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"user\":\"$context.identity.user\",\"method\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}"
-   }
+    format          = "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"user\":\"$context.identity.user\",\"method\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}"
+  }
 }
 
 
 
 /*First Backend function contacted by API*/
-  resource "aws_lambda_function" "maf_first_lambda" {
-    filename      = "${path.module}/python/first-lambda.zip"
-    function_name = "maf_first_lambda"
-    role          = aws_iam_role.lambda_role.arn
-    handler       = "firstLambda.lambda_handler"
-    runtime       = "python3.8"
-    source_code_hash = data.archive_file.zip_the_python_code_first_lambda.output_base64sha256 # for updates
-    depends_on    = [aws_iam_role_policy_attachment.attach_policies]
-  } 
+resource "aws_lambda_function" "maf_first_lambda" {
+  filename         = "${path.module}/python/first-lambda.zip"
+  function_name    = "maf_first_lambda"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "firstLambda.lambda_handler"
+  runtime          = "python3.8"
+  source_code_hash = data.archive_file.zip_the_python_code_first_lambda.output_base64sha256 # for updates
+  depends_on       = [aws_iam_role_policy_attachment.attach_policies]
+}
 
-  //*AAAAAAAAAAAAAAAAAAAAAAAAAdisper*/
-  resource "aws_lambda_permission" "api_gw" {
+//*AAAAAAAAAAAAAAAAAAAAAAAAAdisper*/
+resource "aws_lambda_permission" "api_gw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.maf_first_lambda.function_name
@@ -444,13 +444,13 @@ resource "aws_apigatewayv2_stage" "development" {
 }
 
 
-//dynamodb table
+//dynamodb table --Invetories
 
 resource "aws_dynamodb_table" "motherboards-inventory" {
   name           = "MotherboardsInventory"
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 20
-  write_capacity = 20
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
   hash_key       = "Model"
 
   attribute {
@@ -464,11 +464,11 @@ resource "aws_dynamodb_table" "motherboards-inventory" {
   }
 
   global_secondary_index {
-    name               = "AvailableIndex"
-    hash_key           = "Available"
-    projection_type    = "ALL"
-    read_capacity      = 20
-    write_capacity     = 20
+    name            = "AvailableIndex"
+    hash_key        = "Available"
+    projection_type = "ALL"
+    read_capacity   = 0
+    write_capacity  = 0
   }
 
   tags = {
@@ -478,9 +478,9 @@ resource "aws_dynamodb_table" "motherboards-inventory" {
 }
 resource "aws_dynamodb_table" "cpus-inventory" {
   name           = "CPUsInventory"
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 20
-  write_capacity = 20
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
   hash_key       = "Model"
 
   attribute {
@@ -499,19 +499,19 @@ resource "aws_dynamodb_table" "cpus-inventory" {
   }
 
   global_secondary_index {
-    name               = "AvailableIndex"
-    hash_key           = "Available"
-    projection_type    = "ALL"
-    read_capacity      = 20
-    write_capacity     = 20
+    name            = "AvailableIndex"
+    hash_key        = "Available"
+    projection_type = "ALL"
+    read_capacity   = 0
+    write_capacity  = 0
   }
 }
 
 resource "aws_dynamodb_table" "ram-inventory" {
   name           = "RAMInventory"
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 20
-  write_capacity = 20
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
   hash_key       = "Model"
 
   attribute {
@@ -530,19 +530,19 @@ resource "aws_dynamodb_table" "ram-inventory" {
   }
 
   global_secondary_index {
-    name               = "AvailableIndex"
-    hash_key           = "Available"
-    projection_type    = "ALL"
-    read_capacity      = 20
-    write_capacity     = 20
+    name            = "AvailableIndex"
+    hash_key        = "Available"
+    projection_type = "ALL"
+    read_capacity   = 0
+    write_capacity  = 0
   }
 }
 
 resource "aws_dynamodb_table" "storage-drives-inventory" {
   name           = "StorageDrivesInventory"
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 20
-  write_capacity = 20
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
   hash_key       = "Model"
 
   attribute {
@@ -561,19 +561,19 @@ resource "aws_dynamodb_table" "storage-drives-inventory" {
   }
 
   global_secondary_index {
-    name               = "AvailableIndex"
-    hash_key           = "Available"
-    projection_type    = "ALL"
-    read_capacity      = 20
-    write_capacity     = 20
+    name            = "AvailableIndex"
+    hash_key        = "Available"
+    projection_type = "ALL"
+    read_capacity   = 0
+    write_capacity  = 0
   }
 }
 
 resource "aws_dynamodb_table" "cases-inventory" {
   name           = "CasesInventory"
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 20
-  write_capacity = 20
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
   hash_key       = "Model"
 
   attribute {
@@ -587,11 +587,11 @@ resource "aws_dynamodb_table" "cases-inventory" {
   }
 
   global_secondary_index {
-    name = "AvailableIndex"
-    hash_key = "Available"
+    name            = "AvailableIndex"
+    hash_key        = "Available"
     projection_type = "ALL"
-    write_capacity = 20
-    read_capacity = 20
+    read_capacity   = 0
+    write_capacity  = 0
   }
 
 
@@ -603,9 +603,9 @@ resource "aws_dynamodb_table" "cases-inventory" {
 
 resource "aws_dynamodb_table" "power-supplies-inventory" {
   name           = "PowerSuppliesInventory"
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 20
-  write_capacity = 20
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
   hash_key       = "Model"
 
   attribute {
@@ -619,11 +619,11 @@ resource "aws_dynamodb_table" "power-supplies-inventory" {
   }
 
   global_secondary_index {
-    name = "AvailableIndex"
-    hash_key = "Available"
+    name            = "AvailableIndex"
+    hash_key        = "Available"
     projection_type = "ALL"
-    write_capacity = 20
-    read_capacity = 20
+    read_capacity   = 0
+    write_capacity  = 0
   }
 
 
@@ -635,9 +635,9 @@ resource "aws_dynamodb_table" "power-supplies-inventory" {
 
 resource "aws_dynamodb_table" "gpus-inventory" {
   name           = "GPUsInventory"
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 20
-  write_capacity = 20
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
   hash_key       = "Model"
 
   attribute {
@@ -656,12 +656,262 @@ resource "aws_dynamodb_table" "gpus-inventory" {
   }
 
   global_secondary_index {
-    name               = "AvailableIndex"
-    hash_key           = "Available"
-    projection_type    = "ALL"
-    read_capacity      = 20
-    write_capacity     = 20
+    name            = "AvailableIndex"
+    hash_key        = "Available"
+    projection_type = "ALL"
+    read_capacity   = 0
+    write_capacity  = 0
   }
 }
+
+
+
+
+
+//dynamodb table --Details
+
+resource "aws_dynamodb_table" "motherboards-specifications" {
+  name           = "MotherboardsSpecifications"
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+/*
+  attribute  {
+    name = "Socket Type"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Chipset"
+    type = "S"
+  }
+
+  attribute  {
+    name = "RAM Type"
+    type = "S"
+  }
+
+  attribute  {
+    name = "RAM Speed"
+    type = "S"
+  }
+
+  attribute  {
+    name = "PCIe Slots"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Storage Interfaces"
+    type = "S"
+  }
+
+
+  attribute  {
+    name = "Other Specs"
+    type = "S"
+  }
+*/
+
+  tags = {
+    Name        = "motherboards-specifications"
+    Environment = "production"
+  }
+}
+
+resource "aws_dynamodb_table" "cpus-specifications" {
+  name           = "CPUsSpecifications"
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+/*
+  attribute  {
+    name = "Socket Type"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Chipset"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Other Specs"
+    type = "S"
+  }
+*/
+  tags = {
+    Name        = "cpus-specifications"
+    Environment = "production"
+  }
+
+}
+
+resource "aws_dynamodb_table" "ram-specifications" {
+  name           = "RAMSpecifications"
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+/*
+  attribute  {
+    name = "Type"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Speed"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Other Specs"
+    type = "S"
+  }
+*/
+  tags = {
+    Name        = "ram-specifications"
+    Environment = "production"
+  }
+
+}
+
+resource "aws_dynamodb_table" "storage-drives-specifications" {
+  name           = "StorageDrivesSpecifications"
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+/*
+  attribute  {
+    name = "Interface"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Form Factor"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Capacity"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Other Specs"
+    type = "S"
+  }
+*/
+  tags = {
+    Name        = "storage-drives-specifications"
+    Environment = "production"
+  }
+
+}
+
+resource "aws_dynamodb_table" "cases-specifications" {
+  name           = "CasesSpecifications"
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+/*
+  attribute  {
+    name = "Other Specs"
+    type = "S"
+  }
+*/
+
+  tags = {
+    Name        = "cases-specifications"
+    Environment = "production"
+  }
+}
+
+resource "aws_dynamodb_table" "power-supplies-specifications" {
+  name           = "PowerSuppliesSpecifications"
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+/*
+  attribute  {
+    name = "Wattage"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Other Specs"
+    type = "S"
+  }*/
+
+  tags = {
+    Name        = "power-supplies-specifications"
+    Environment = "production"
+  }
+}
+
+resource "aws_dynamodb_table" "gpus-specifications" {
+  name           = "GPUsSpecifications"
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
+  hash_key       = "Model"
+
+  attribute {
+    name = "Model"
+    type = "S"
+  }
+
+  /*attribute  {
+    name = "PCIe Slot"
+    type = "S"
+  }
+
+  attribute  {
+    name = "Power Supply"
+    type = "S"
+  }*/
+
+  tags = {
+    Name        = "gpus-specifications"
+    Environment = "production"
+  }
+
+}
+
 
 //DynamoDB tables

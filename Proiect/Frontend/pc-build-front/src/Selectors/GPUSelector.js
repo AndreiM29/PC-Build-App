@@ -4,6 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import gpuImage from './Images/gpu.jpg';
 
 
 const GPUSelector = () => {
@@ -24,7 +25,6 @@ const GPUSelector = () => {
     const selectedGPU = event.target.value;
     setSelectedGPU(selectedGPU);
     setCurrentIndex(gpuOptions.indexOf(selectedGPU));
-    //localStorage.setItem("selectedGPU", selectedGPU);
   };
 
   const addGPUToConfig = (event) => {
@@ -38,6 +38,7 @@ const GPUSelector = () => {
 
   return (
     <div className="selector-container">
+      <img src={gpuImage} alt="GPU" style={{ width: '80px', height: '80px' }} />
       <Typography variant="h4" className="selector-title">
         Select your GPU
       </Typography>

@@ -4,6 +4,8 @@ import Typography from "@material-ui/core/Typography";
 import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import caseImage from './Images/case.jpg';
+
 
 
 const CaseSelector = () => {
@@ -37,6 +39,7 @@ const CaseSelector = () => {
 
   return (
     <div className="selector-container">
+      <img src={caseImage} alt="Case" style={{ width: '80px', height: '80px' }} />
       <Typography variant="h4" className="selector-title">
         Select your Case
       </Typography>

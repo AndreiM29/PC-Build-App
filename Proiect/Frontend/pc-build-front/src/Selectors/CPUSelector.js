@@ -4,6 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import cpuImage from './Images/cpu.jpg';
 
 
 const CPUSelector = () => {
@@ -24,7 +25,6 @@ const CPUSelector = () => {
     const selectedCPU = event.target.value;
     setSelectedCPU(selectedCPU);
     setCurrentIndex(cpuOptions.indexOf(selectedCPU));
-    localStorage.setItem("selectedCPU", selectedCPU);
   };
 
   const addCPUToConfig = (event) => {
@@ -38,6 +38,7 @@ const CPUSelector = () => {
 
   return (
     <div className="selector-container">
+      <img src={cpuImage} alt="CPU" style={{ width: '80px', height: '80px' }} />
       <Typography variant="h4" className="selector-title">
         Select your CPU
       </Typography>

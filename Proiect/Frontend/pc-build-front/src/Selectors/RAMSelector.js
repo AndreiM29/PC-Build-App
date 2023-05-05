@@ -4,6 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ramImage from './Images/ram.jpg';
 
 
 const RAMSelector = () => {
@@ -24,7 +25,6 @@ const RAMSelector = () => {
     const selectedRAM = event.target.value;
     setSelectedRAM(selectedRAM);
     setCurrentIndex(ramOptions.indexOf(selectedRAM));
-    localStorage.setItem("selectedRAM", selectedRAM);
   };
 
   const addRAMToConfig = (event) => {
@@ -38,6 +38,7 @@ const RAMSelector = () => {
 
   return (
     <div className="selector-container">
+      <img src={ramImage} alt="RAM" style={{ width: '80px', height: '80px' }} />
       <Typography variant="h4" className="selector-title">
         Select your RAM
       </Typography>

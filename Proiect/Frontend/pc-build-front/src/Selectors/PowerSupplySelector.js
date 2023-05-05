@@ -4,6 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import powerSupplyImage from './Images/power_supply.jpg';
 
 
 const PowerSupplySelector = () => {
@@ -24,7 +25,6 @@ const PowerSupplySelector = () => {
     const selectedPowerSupply = event.target.value;
     setSelectedPowerSupply(selectedPowerSupply);
     setCurrentIndex(powerSupplyOptions.indexOf(selectedPowerSupply));
-    localStorage.setItem("selectedPowerSupply", selectedPowerSupply);
   };
 
   const addPowerSupplyToConfig = (event) => {
@@ -38,6 +38,7 @@ const PowerSupplySelector = () => {
 
   return (
     <div className="selector-container">
+      <img src={powerSupplyImage} alt="Power Supply" style={{ width: '80px', height: '80px' }} />
       <Typography variant="h4" className="selector-title">
         Select your Power Supply
       </Typography>

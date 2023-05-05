@@ -12,8 +12,6 @@ const ConfigurationDisplay = () => {
       let accessToken = res.getAccessToken();
       let jwt = accessToken.getJwtToken();
       setAccessToken(jwt);
-      console.log(jwt);
-      console.log(accessToken);
     }).catch(error => console.error(error));
   }, []);
 

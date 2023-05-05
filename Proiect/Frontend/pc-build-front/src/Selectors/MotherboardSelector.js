@@ -4,6 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import motherboardImage from './Images/motherboard.jpg';
 
 
 const MotherboardSelector = () => {
@@ -24,7 +25,6 @@ const MotherboardSelector = () => {
     const motherboard = event.target.value;
     setSelectedMotherboard(motherboard);
     setCurrentIndex(motherboardOptions.indexOf(motherboard));
-    localStorage.setItem("selectedMotherboard", motherboard);
   };
 
   const addMotherboardToConfig = (event) => {
@@ -38,6 +38,7 @@ const MotherboardSelector = () => {
 
   return (
     <div className="selector-container">
+      <img src={motherboardImage} alt="Motherboard" style={{ width: '80px', height: '80px' }} />
       <Typography variant="h4" className="selector-title">
         Select your Motherboard
       </Typography>

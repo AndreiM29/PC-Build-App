@@ -4,6 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import storageImage from './Images/hdd.jpg';
 
 
 const StorageDriveSelector = () => {
@@ -24,7 +25,6 @@ const StorageDriveSelector = () => {
     const selectedStorageDrive = event.target.value;
     setSelectedStorageDrive(selectedStorageDrive);
     setCurrentIndex(storageDriveOptions.indexOf(selectedStorageDrive));
-    localStorage.setItem("selectedStorageDrive", selectedStorageDrive);
   };
 
   const addStorageDriveToConfig = (event) => {
@@ -38,6 +38,7 @@ const StorageDriveSelector = () => {
 
   return (
     <div className="selector-container">
+      <img src={storageImage} alt="Storage" style={{ width: '80px', height: '80px' }} />
       <Typography variant="h4" className="selector-title">
         Select your Storage Drive
       </Typography>
