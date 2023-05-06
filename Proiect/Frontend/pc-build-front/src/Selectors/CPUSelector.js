@@ -5,18 +5,52 @@ import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import cpuImage from './Images/cpu.jpg';
+import { Amplify, Auth } from 'aws-amplify';
+
 
 
 const CPUSelector = () => {
   const [selectedCPU, setSelectedCPU] = useState("");
-  const cpuOptions = ["CPU 1", "CPU 2", "CPU 3", "CPU 4"];
+  const [token, setAccessToken] = useState('');
+  const [cpuOptions, setOptions] = useState([]);
+  const [modelsFetched, setModelsFetched] = useState(false);
+
+  useEffect(() => {
+    if (!modelsFetched){
+      Auth.currentSession().then(res => {
+        let accessToken = res.getAccessToken();
+        let jwt = accessToken.getJwtToken();
+        setAccessToken(jwt);
+      }).catch(error => console.error(error));
+
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/models?type=cpu', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(response => 
+        response.json()
+      )
+        .then(data => {
+          const modelNames = data.models.map(model => model.S);
+          console.log(modelNames);
+          if(modelNames.length > 1){
+            setModelsFetched(true);
+          }
+          setOptions(modelNames);
+        })
+        .catch(error => console.log(error));
+    
+  }})
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const storedCPU = localStorage.getItem("selectedCPU");
     if (storedCPU) {
       setSelectedCPU(storedCPU);
-      setCurrentIndex(cpuOptions.indexOf(storedCPU));
+      if (cpuOptions)
+        setCurrentIndex(cpuOptions.indexOf(storedCPU));
     }
   }, []);
 
@@ -24,7 +58,8 @@ const CPUSelector = () => {
   const handleCPUSelect = (event) => {
     const selectedCPU = event.target.value;
     setSelectedCPU(selectedCPU);
-    setCurrentIndex(cpuOptions.indexOf(selectedCPU));
+    if (cpuOptions)
+      setCurrentIndex(cpuOptions.indexOf(selectedCPU));
   };
 
   const addCPUToConfig = (event) => {
@@ -43,6 +78,7 @@ const CPUSelector = () => {
         Select your CPU
       </Typography>
       <Typography variant="body1">Selected CPU: {selectedCPU}</Typography>
+      {modelsFetched && (
       <div className="selector-options">
         <select value={selectedCPU} onChange={handleCPUSelect}>
           {cpuOptions.map((option) => (
@@ -51,7 +87,7 @@ const CPUSelector = () => {
             </option>
           ))}
         </select>
-      </div>
+      </div>)}
       <Button
         variant="contained"
         color="secondary"

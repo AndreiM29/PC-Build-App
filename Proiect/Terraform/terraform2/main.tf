@@ -421,7 +421,7 @@ resource "aws_apigatewayv2_integration" "int_get_models" {
 resource "aws_apigatewayv2_route" "route2" {
   api_id             = aws_apigatewayv2_api.maf_api.id
   route_key          = "GET /models"
-  target             = "integrations/${aws_apigatewayv2_integration.int.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.int_get_models.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.auth.id
 }

@@ -2,9 +2,8 @@ import json
 import boto3
 
 def lambda_handler(event, context):
-    # Get PC configuration from API Gateway
-    body = event['body']
-    type = body['type']
+    params = event['queryStringParameters']
+    type = params['type']
     print(type)
 
     table = ''
