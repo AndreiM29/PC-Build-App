@@ -5,12 +5,45 @@ import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import motherboardImage from './Images/motherboard.jpg';
+import { Amplify, Auth } from 'aws-amplify';
 
 
 const MotherboardSelector = () => {
+  const [token, setAccessToken] = useState('');
   const [selectedMotherboard, setSelectedMotherboard] = useState("");
-  const motherboardOptions = ["Motherboard 1", "Motherboard 2", "Motherboard 3", "Motherboard 4"];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [motherboardOptions, setOptions] = useState([]);
+  const [modelsFetched, setModelsFetched] = useState(false);
+
+  useEffect(() => {
+    if (!modelsFetched){
+      Auth.currentSession().then(res => {
+        let accessToken = res.getAccessToken();
+        let jwt = accessToken.getJwtToken();
+        setAccessToken(jwt);
+      }).catch(error => console.error(error));
+
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/models?type=motherboard', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(response => 
+        response.json()
+      )
+        .then(data => {
+          const modelNames = data.models.map(model => model.S);
+          console.log(modelNames);
+          if(modelNames.length > 1){
+            setModelsFetched(true);
+          }
+          setOptions(modelNames);
+          if (localStorage.getItem("selectedMotherboard") == "")
+            setSelectedMotherboard(modelNames[0]);
+        })
+        .catch(error => console.log(error));
+    
+  }})
 
   useEffect(() => {
     const storedMotherboard = localStorage.getItem("selectedMotherboard");
@@ -43,6 +76,7 @@ const MotherboardSelector = () => {
         Select your Motherboard
       </Typography>
       <Typography variant="body1">Selected Motherboard: {selectedMotherboard}</Typography>
+      {modelsFetched && (
       <div className="selector-options">
         <select value={selectedMotherboard} onChange={handleMotherboardSelect}>
           {motherboardOptions.map((option) => (
@@ -51,7 +85,7 @@ const MotherboardSelector = () => {
             </option>
           ))}
         </select>
-      </div>
+      </div>)}
       <Button
         variant="contained"
         color="secondary"

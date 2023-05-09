@@ -11,7 +11,13 @@ variable "lambda_name" {
 }
 
 variable "lambda_get_models" {
-  description = "The name of the first lambda function contacted by the API"
+  description = "The name of the lambda function that returns the name of all the models for a compoennt type"
   type        = string
   default = "maf_get_models_by_component_type"
+}
+
+variable "lambda_get_model" {
+  description = "The name of the lambda function that returns the specs of a certain model"
+  type        = string
+  default = "maf_get_model_specifications"
 }

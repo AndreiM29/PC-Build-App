@@ -50,3 +50,16 @@
   background-color: #1b832f;
 }
 
+.flex-container {
+  display: flex;
+}
+
+.left-column {
+  flex: 1;
+}
+
+.right-column {
+  flex: 1;
+}
+
+

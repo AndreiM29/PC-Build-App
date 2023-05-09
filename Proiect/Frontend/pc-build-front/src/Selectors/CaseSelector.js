@@ -5,19 +5,52 @@ import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import caseImage from './Images/case.jpg';
+import { Amplify, Auth } from 'aws-amplify';
 
 
 
 const CaseSelector = () => {
+  const [token, setAccessToken] = useState('');
   const [selectedCase, setSelectedCase] = useState("");
-  const caseOptions = ["Case 1", "Case 2", "Case 3", "Case 4"];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [caseOptions, setOptions] = useState([]);
+  const [modelsFetched, setModelsFetched] = useState(false);
+
+  useEffect(() => {
+    if (!modelsFetched){
+      Auth.currentSession().then(res => {
+        let accessToken = res.getAccessToken();
+        let jwt = accessToken.getJwtToken();
+        setAccessToken(jwt);
+      }).catch(error => console.error(error));
+
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/models?type=case', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(response => 
+        response.json()
+      )
+        .then(data => {
+          const modelNames = data.models.map(model => model.S);
+          console.log(modelNames);
+          if(modelNames.length > 1){
+            setModelsFetched(true);
+          }
+          setOptions(modelNames);
+          if (localStorage.getItem("selectedCase") == "")
+            setSelectedCase(modelNames[0]);
+        })
+        .catch(error => console.log(error));
+    
+  }})
 
   useEffect(() => {
     const storedCase = localStorage.getItem("selectedCase");
     if (storedCase) {
       setSelectedCase(storedCase);
-      setCurrentIndex(caseOptions.indexOf(storedCase)); 
+      //setCurrentIndex(caseOptions.indexOf(storedCase)); 
     }
   }, []);
 
@@ -44,6 +77,7 @@ const CaseSelector = () => {
         Select your Case
       </Typography>
       <Typography variant="body1">Selected Case: {selectedCase}</Typography>
+      {modelsFetched && (
       <div className="selector-options">
         <select value={selectedCase} onChange={handleCaseSelect}>
           {caseOptions.map((option) => (
@@ -52,7 +86,7 @@ const CaseSelector = () => {
             </option>
           ))}
         </select>
-      </div>
+      </div>)}
       <Button
         variant="contained"
         color="secondary"

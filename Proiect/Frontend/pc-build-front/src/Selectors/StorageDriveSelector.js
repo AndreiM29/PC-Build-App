@@ -5,12 +5,45 @@ import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import storageImage from './Images/hdd.jpg';
+import { Amplify, Auth } from 'aws-amplify';
 
 
 const StorageDriveSelector = () => {
+  const [token, setAccessToken] = useState('');
   const [selectedStorageDrive, setSelectedStorageDrive] = useState("");
-  const storageDriveOptions = ["Storage Drive 1", "Storage Drive 2", "Storage Drive 3", "Storage Drive 4"];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [storageDriveOptions, setOptions] = useState([]);
+  const [modelsFetched, setModelsFetched] = useState(false);
+
+  useEffect(() => {
+    if (!modelsFetched){
+      Auth.currentSession().then(res => {
+        let accessToken = res.getAccessToken();
+        let jwt = accessToken.getJwtToken();
+        setAccessToken(jwt);
+      }).catch(error => console.error(error));
+
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/models?type=storage', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(response => 
+        response.json()
+      )
+        .then(data => {
+          const modelNames = data.models.map(model => model.S);
+          console.log(modelNames);
+          if(modelNames.length > 1){
+            setModelsFetched(true);
+          }
+          setOptions(modelNames);
+          if (localStorage.getItem("selectedStorageDrive") == "")
+            setSelectedStorageDrive(modelNames[0]);
+        })
+        .catch(error => console.log(error));
+    
+  }})
 
   useEffect(() => {
     const storedStorageDrive = localStorage.getItem("selectedStorageDrive");
@@ -43,6 +76,7 @@ const StorageDriveSelector = () => {
         Select your Storage Drive
       </Typography>
       <Typography variant="body1">Selected Storage Drive: {selectedStorageDrive}</Typography>
+      {modelsFetched && (
       <div className="selector-options">
         <select value={selectedStorageDrive} onChange={handleStorageDriveSelect}>
           {storageDriveOptions.map((option) => (
@@ -51,7 +85,7 @@ const StorageDriveSelector = () => {
             </option>
           ))}
         </select>
-      </div>
+      </div>)}
       <Button
         variant="contained"
         color="secondary"

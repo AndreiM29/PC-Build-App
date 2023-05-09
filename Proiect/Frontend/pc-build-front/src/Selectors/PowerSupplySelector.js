@@ -5,12 +5,45 @@ import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import powerSupplyImage from './Images/power_supply.jpg';
+import { Amplify, Auth } from 'aws-amplify';
 
 
 const PowerSupplySelector = () => {
+  const [token, setAccessToken] = useState('');
   const [selectedPowerSupply, setSelectedPowerSupply] = useState("");
-  const powerSupplyOptions = ["Power Supply 1", "Power Supply 2", "Power Supply 3", "Power Supply 4"];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [powerSupplyOptions, setOptions] = useState([]);
+  const [modelsFetched, setModelsFetched] = useState(false);
+
+  useEffect(() => {
+    if (!modelsFetched){
+      Auth.currentSession().then(res => {
+        let accessToken = res.getAccessToken();
+        let jwt = accessToken.getJwtToken();
+        setAccessToken(jwt);
+      }).catch(error => console.error(error));
+
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/models?type=power', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(response => 
+        response.json()
+      )
+        .then(data => {
+          const modelNames = data.models.map(model => model.S);
+          console.log(modelNames);
+          if(modelNames.length > 1){
+            setModelsFetched(true);
+          }
+          setOptions(modelNames);
+          if (localStorage.getItem("selectedPowerSupply") == "")
+            setSelectedPowerSupply(modelNames[0]);
+        })
+        .catch(error => console.log(error));
+    
+  }})
 
   useEffect(() => {
     const storedPowerSupply = localStorage.getItem("selectedPowerSupply");
@@ -43,6 +76,7 @@ const PowerSupplySelector = () => {
         Select your Power Supply
       </Typography>
       <Typography variant="body1">Selected Power Supply: {selectedPowerSupply}</Typography>
+      {modelsFetched && (
       <div className="selector-options">
         <select value={selectedPowerSupply} onChange={handlePowerSupplySelect}>
           {powerSupplyOptions.map((option) => (
@@ -51,7 +85,7 @@ const PowerSupplySelector = () => {
             </option>
           ))}
         </select>
-      </div>
+      </div>)}
       <Button
         variant="contained"
         color="secondary"

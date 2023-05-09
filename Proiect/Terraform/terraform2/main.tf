@@ -207,6 +207,12 @@ data "archive_file" "zip_the_python_code" {
   output_path = "${path.module}/python/launch-ecs.zip"
 }
 
+data "archive_file" "zip_the_python_code_get_model_specifications_lambda" {
+  type        = "zip"
+  source_dir  = "${path.module}/getModel"
+  output_path = "${path.module}/python/get_model_specifications_lambda.zip"
+}
+
 resource "aws_lambda_function" "terraform_lambda_func" {
   filename         = "${path.module}/python/launch-ecs.zip"
   function_name    = "Launch_ECS"
@@ -426,6 +432,23 @@ resource "aws_apigatewayv2_route" "route2" {
   authorizer_id      = aws_apigatewayv2_authorizer.auth.id
 }
 
+//this is for the get model lambda:
+resource "aws_apigatewayv2_integration" "int_get_model" {
+  api_id             = aws_apigatewayv2_api.maf_api.id
+  integration_type   = "AWS_PROXY"
+  connection_type    = "INTERNET"
+  integration_method = "POST"
+  integration_uri    = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:${data.aws_caller_identity.current.id}:function:${var.lambda_get_model}/invocations"
+}
+
+resource "aws_apigatewayv2_route" "route3" {
+  api_id             = aws_apigatewayv2_api.maf_api.id
+  route_key          = "GET /model"
+  target             = "integrations/${aws_apigatewayv2_integration.int_get_model.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.auth.id
+}
+
 /*deployment */
 
 resource "aws_cloudwatch_log_group" "api_logs" {
@@ -455,6 +478,16 @@ resource "aws_lambda_function" "maf_get_models_by_component_type" {
   depends_on       = [aws_iam_role_policy_attachment.attach_policies]# vezi acilea 
 }
 
+resource "aws_lambda_function" "maf_get_model_specifications" {
+  filename         = "${path.module}/python/get_model_specifications_lambda.zip"
+  function_name    = "maf_get_model_specifications"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "get_model_specifications_lambda.lambda_handler"
+  runtime          = "python3.8"
+  source_code_hash = data.archive_file.zip_the_python_code_get_model_specifications_lambda.output_base64sha256 # for updates
+  depends_on       = [aws_iam_role_policy_attachment.attach_policies]# vezi acilea 
+}
+
 /*First Backend function contacted by API*/
 resource "aws_lambda_function" "maf_first_lambda" {
   filename         = "${path.module}/python/first-lambda.zip"
@@ -479,6 +512,15 @@ resource "aws_lambda_permission" "api_gw_get_models" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.maf_get_models_by_component_type.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.maf_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gw_get_model" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.maf_get_model_specifications.function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_apigatewayv2_api.maf_api.execution_arn}/*/*"

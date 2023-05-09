@@ -5,12 +5,45 @@ import "./Selector.css"; // Import the CSS file
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ramImage from './Images/ram.jpg';
+import { Amplify, Auth } from 'aws-amplify';
 
 
 const RAMSelector = () => {
+  const [token, setAccessToken] = useState('');
   const [selectedRAM, setSelectedRAM] = useState("");
-  const ramOptions = ["RAM 1", "RAM 2", "RAM 3", "RAM 4"];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [ramOptions, setOptions] = useState([]);
+  const [modelsFetched, setModelsFetched] = useState(false);
+
+  useEffect(() => {
+    if (!modelsFetched){
+      Auth.currentSession().then(res => {
+        let accessToken = res.getAccessToken();
+        let jwt = accessToken.getJwtToken();
+        setAccessToken(jwt);
+      }).catch(error => console.error(error));
+
+      fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/models?type=ram', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then(response => 
+        response.json()
+      )
+        .then(data => {
+          const modelNames = data.models.map(model => model.S);
+          console.log(modelNames);
+          if(modelNames.length > 1){
+            setModelsFetched(true);
+          }
+          setOptions(modelNames);
+          if (localStorage.getItem("selectedRAM") == "")
+            setSelectedRAM(modelNames[0]);
+        })
+        .catch(error => console.log(error));
+    
+  }})
 
   useEffect(() => {
     const storedRAM = localStorage.getItem("selectedRAM");
@@ -43,6 +76,7 @@ const RAMSelector = () => {
         Select your RAM
       </Typography>
       <Typography variant="body1">Selected RAM: {selectedRAM}</Typography>
+      {modelsFetched && (
       <div className="selector-options">
         <select value={selectedRAM} onChange={handleRAMSelect}>
           {ramOptions.map((option) => (
@@ -51,7 +85,7 @@ const RAMSelector = () => {
             </option>
           ))}
         </select>
-      </div>
+      </div>)}
       <Button
         variant="contained"
         color="secondary"
