@@ -54,7 +54,10 @@ const Menu = () => {
         <NavLink to="/powersupply" activeClassName="active">Power Supply</NavLink>
       </li>
       <li className={classes.menuItem}>
-        <NavLink to="/configuration" activeClassName="active">Configuration</NavLink>
+        <NavLink to="/configuration" activeClassName="active">Current Configuration</NavLink>
+      </li>
+      <li className={classes.menuItem}>
+        <NavLink to="/configurations" activeClassName="active">Configurations</NavLink>
       </li>
       {/* Add more menu items as needed */}
     </ul>

@@ -22,6 +22,7 @@ import { API } from 'aws-amplify';
 import StorageDriveSelector from './Selectors/StorageDriveSelector';
 import PowerSupplySelector from './Selectors/PowerSupplySelector';
 import ConfigurationDisplay from './Configuration';
+import Configurations from './Configurations';
 
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -107,6 +108,7 @@ function App({ signOut, user }) {
             <Route path="/storagedrive" element={<StorageDriveSelector/>} />
             <Route path="/powersupply" element={<PowerSupplySelector/>} />
             <Route path="/configuration" element={<ConfigurationDisplay/>} />
+            <Route path="/configurations" element={<Configurations/>} />
             {/* Add more routes for other pages/components as needed */}
           </Routes>
         </div>

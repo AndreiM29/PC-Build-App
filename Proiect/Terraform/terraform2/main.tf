@@ -25,7 +25,11 @@ locals {
 }
 
 resource "aws_sqs_queue" "cart_queue" {
-  name = var.sqs_name
+  name = var.sqs_name1
+}
+
+resource "aws_sqs_queue" "delivery_queue" {
+  name = var.sqs_name2
 }
 
 resource "aws_sqs_queue_policy" "full_send_message_policy" {
@@ -42,6 +46,26 @@ resource "aws_sqs_queue_policy" "full_send_message_policy" {
       "Principal": "*",
       "Action": "sqs:SendMessage",
       "Resource": "${aws_sqs_queue.cart_queue.arn}"
+    }
+  ]
+}
+POLICY
+}
+
+resource "aws_sqs_queue_policy" "full_send_message_policy2" {
+  queue_url = aws_sqs_queue.delivery_queue.id
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Id": "sqspolicy",
+  "Statement": [
+    {
+      "Sid": "First",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "sqs:SendMessage",
+      "Resource": "${aws_sqs_queue.delivery_queue.arn}"
     }
   ]
 }
@@ -169,7 +193,11 @@ resource "aws_iam_policy" "lambda_vpc_access" {
         "ec2:DescribeSubnets",
         "ec2:DescribeVpcs",
         "ecs:ListTasks",
-        "ecs:RunTask"
+        "ecs:RunTask",
+        "ecr:DescribeRepositories",
+        "ecr:GetAuthorizationToken",
+        "ecs:RegisterTaskDefinition",
+        "iam:PassRole"
       ],
       "Resource": "*",
       "Effect": "Allow"
@@ -213,6 +241,12 @@ data "archive_file" "zip_the_python_code_get_model_specifications_lambda" {
   output_path = "${path.module}/python/get_model_specifications_lambda.zip"
 }
 
+data "archive_file" "zip_the_python_code_maf_get_configurations" {
+  type        = "zip"
+  source_dir  = "${path.module}/getConfigurations"
+  output_path = "${path.module}/python/maf_get_configurations.zip"
+}
+
 resource "aws_lambda_function" "terraform_lambda_func" {
   filename         = "${path.module}/python/launch-ecs.zip"
   function_name    = "Launch_ECS"
@@ -224,7 +258,9 @@ resource "aws_lambda_function" "terraform_lambda_func" {
   environment {
     variables = {
       ecs_cluster = "ecs_cluster",
-      max_tasks   = "5"
+      max_tasks   = "5",
+      image_uri   = "346037543717.dkr.ecr.eu-west-1.amazonaws.com/delivery_repo:latest"
+      task_definition_arn = "arn:aws:ecs:eu-west-1:346037543717:task-definition/DeliveryFamily:1"
     }
   }
 }
@@ -243,6 +279,25 @@ resource "aws_lambda_permission" "for_sns" {
   principal     = "sns.amazonaws.com"
   source_arn    = aws_sns_topic.shopping_cart_updates.arn
 }
+
+resource "aws_iam_role_policy" "sns_publish_policy" {
+  name        = "sns-publish-policy"
+  role        = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = aws_sns_topic.shopping_cart_updates.arn
+      }
+    ]
+  })
+}
+
 
 resource "aws_iam_role" "sns_role" {
   name = "iam_for_sns_to_publish_to_lambda"
@@ -306,7 +361,44 @@ resource "aws_vpc" "main" {
 }
 
 #Subnets
+resource "aws_subnet" "mysubnet_public_1" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
 
+  tags = {
+    Name = "mysubnet.public.1"
+  }
+
+  map_public_ip_on_launch = true
+}
+
+resource "aws_internet_gateway" "my_igw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "my_igw"
+  }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.my_igw.id
+  }
+
+  tags = {
+    Name = "public_route_table"
+  }
+}
+
+resource "aws_route_table_association" "public_subnet_association" {
+  subnet_id      = aws_subnet.mysubnet_public_1.id
+  route_table_id = aws_route_table.public.id
+}
+
+/*
 resource "aws_subnet" "mysubnet_private_1" {
   vpc_id     = aws_vpc.main.id
   cidr_block = "10.0.1.0/24"
@@ -316,9 +408,33 @@ resource "aws_subnet" "mysubnet_private_1" {
   }
 }
 
+resource "aws_eip" "nat_eip" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "nat_gateway" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.mysubnet_private_1.id
+}
+
+resource "aws_route_table" "private_route_table" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+  }
+}
+
+resource "aws_route_table_association" "private_route_association" {
+  subnet_id      = aws_subnet.mysubnet_private_1.id
+  route_table_id = aws_route_table.private_route_table.id
+}
+*/
+
 resource "aws_security_group" "allow_tls" {
   name        = "mysecuritygroup"
-  description = "Allow TLS inbound traffic"
+  description = "Allow TLS and HTTP inbound traffic"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -327,7 +443,14 @@ resource "aws_security_group" "allow_tls" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = [aws_vpc.main.cidr_block]
-    # ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
+  }
+
+  ingress {
+    description = "HTTP from VPC"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   egress {
@@ -335,13 +458,13 @@ resource "aws_security_group" "allow_tls" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    # ipv6_cidr_blocks = ["::/0"]
   }
 
   tags = {
     Name = "mysecuritygroup"
   }
 }
+
 
 data "aws_caller_identity" "current" {}
 
@@ -449,6 +572,23 @@ resource "aws_apigatewayv2_route" "route3" {
   authorizer_id      = aws_apigatewayv2_authorizer.auth.id
 }
 
+//this is for the get configurations lambda:
+resource "aws_apigatewayv2_integration" "int_get_configurations" {
+  api_id             = aws_apigatewayv2_api.maf_api.id
+  integration_type   = "AWS_PROXY"
+  connection_type    = "INTERNET"
+  integration_method = "POST"
+  integration_uri    = "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:${data.aws_caller_identity.current.id}:function:${var.lambda_get_configurations}/invocations"
+}
+
+resource "aws_apigatewayv2_route" "route4" {
+  api_id             = aws_apigatewayv2_api.maf_api.id
+  route_key          = "GET /configurations"
+  target             = "integrations/${aws_apigatewayv2_integration.int_get_configurations.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.auth.id
+}
+
 /*deployment */
 
 resource "aws_cloudwatch_log_group" "api_logs" {
@@ -497,6 +637,22 @@ resource "aws_lambda_function" "maf_first_lambda" {
   runtime          = "python3.8"
   source_code_hash = data.archive_file.zip_the_python_code_first_lambda.output_base64sha256 # for updates
   depends_on       = [aws_iam_role_policy_attachment.attach_policies]
+  environment {
+    variables = {
+      TOPIC_ARN = "${aws_sns_topic.shopping_cart_updates.arn}",
+    }
+  }
+
+}
+
+resource "aws_lambda_function" "maf_get_configurations" {
+  filename         = "${path.module}/python/maf_get_configurations.zip"
+  function_name    = "maf_get_configurations"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "maf_get_configurations.lambda_handler"
+  runtime          = "python3.8"
+  source_code_hash = data.archive_file.zip_the_python_code_maf_get_configurations.output_base64sha256 # for updates
+  depends_on       = [aws_iam_role_policy_attachment.attach_policies]# vezi acilea 
 }
 
 resource "aws_lambda_permission" "api_gw" {
@@ -521,6 +677,15 @@ resource "aws_lambda_permission" "api_gw_get_model" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.maf_get_model_specifications.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.maf_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gw_get_configurations" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.maf_get_configurations.function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_apigatewayv2_api.maf_api.execution_arn}/*/*"
@@ -996,5 +1161,30 @@ resource "aws_dynamodb_table" "gpus-specifications" {
 
 }
 
+resource "aws_dynamodb_table" "configurations" {
+  name           = "Configurations"
+  billing_mode   = "PAY_PER_REQUEST"
+  read_capacity  = 0
+  write_capacity = 0
+  hash_key       = "ID"
 
+  attribute {
+    name = "ID"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "configurations"
+    Environment = "production"
+  }
+}
 //DynamoDB tables
+
+//ECR REPO
+resource "aws_ecr_repository" "delivery_repo" {
+  name                 = "delivery_repo"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}

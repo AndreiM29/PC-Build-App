@@ -5,6 +5,8 @@ import boto3
 #you can pass environment variables
 ecs_cluster = os.environ['ecs_cluster'] 
 maxTasksStr = os.environ.get('max_tasks') or 2
+image_uri = os.environ['image_uri']
+task_definition_arn = os.environ['task_definition_arn']
 maxTasks = int(maxTasksStr)
 
 ec2Client = boto3.client('ec2')
@@ -15,7 +17,7 @@ subnets = ec2Client.describe_subnets(
     Filters=[
         {
             'Name':'tag:Name',
-            'Values': ['mysubnet.private*']
+            'Values': ['mysubnet.public*']
         }
     ],
     MaxResults=5
@@ -63,23 +65,21 @@ def lambda_handler(event, context):
         print(response)
     else:
         fullResponse = ecsClient.run_task(
-            cluster = ecs_cluster, #willBe: ecs_cluster
-            taskDefinition = 'test',
-            #taskDefinition = '{}-mytask'.format(ecs_cluster),
-            launchType = 'FARGATE',
+            cluster=ecs_cluster,
+            taskDefinition=task_definition_arn,
+            launchType='FARGATE',
             enableECSManagedTags=True,
-            #group = 'service:myservice',
             networkConfiguration={
                 'awsvpcConfiguration': {
                     'subnets': subnetIDs,
                     'securityGroups': securityGroupIds,
-                    'assignPublicIp': 'DISABLED'
+                    'assignPublicIp': 'ENABLED'
                 }
             },
-            tags=[
-                
-            ]
+            tags=[],
         )
+
+
         print("runt_task response:", fullResponse)
         response = {"taskArns": [tasks['taskArn'] for tasks in fullResponse['tasks']] }
         print("taskARNs:", response)

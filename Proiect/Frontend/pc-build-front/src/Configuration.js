@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import { Amplify, Auth } from 'aws-amplify';
+import { ToastContainer, toast } from 'react-toastify';
+
 import './Configuration.css';
 
 
@@ -45,15 +47,29 @@ const ConfigurationDisplay = () => {
   }, []);
 
   const handleSendConfig = () => {
-  
+    const message = "Sent the Configuration!"
     fetch('https://d8ahjq9ill.execute-api.eu-west-1.amazonaws.com/development/configuration', {
       method: 'POST',
-      body: JSON.stringify({ pc_configuration: config, client: 'Clientu' }),
+      body: JSON.stringify({ pc_configuration: config, client: 'Andrei1' }),
       headers: {
         'Authorization': `Bearer ${token}`      }
     })
-      .then(response => response.json())
-      .then(data => console.log(data))
+      .then(response => {
+        if (response.ok) {
+          toast.success(message);
+          return response.json(); // returns a promise that resolves with the parsed JSON data
+        } else {
+          toast.warn("Could not send the configuration!")
+        }
+      })
+      .then(data => {
+        if (data.all_available == false){
+          toast.info("Not all the componts are present in the local database, but we are proceeding with the provisioning.")
+        }
+        else{
+          toast.success("All the component are available in the local database!");
+        }
+        console.log(data)})
       .catch(error => console.error(error));
   }
 

@@ -1,10 +1,16 @@
 import json
 import boto3
+import os
+import hashlib
+import random
+import time
+
 
 def lambda_handler(event, context):
     # Get PC configuration from API Gateway
     body = json.loads(event['body'])
     pc_configuration = body['pc_configuration']
+    client = body['client']
     print(pc_configuration)
     
     # Extract individual models from PC configuration
@@ -57,6 +63,46 @@ def lambda_handler(event, context):
     }
     print(response)
     
+    if all_available == False:
+        sns_client = boto3.client('sns')
+        message = json.dumps(pc_configuration)
+        topic_arn = os.environ.get('TOPIC_ARN', 'default_value')
+        sns_client.publish(
+        TopicArn=topic_arn,
+        Message=message)
+
+    table = 'Configurations'
+    timestamp = int(time.time() * 1000)
+    
+    cryptogen = random.SystemRandom()
+    seed = cryptogen.randint(0, 100000)
+    
+    input_str = f"{timestamp}-{seed}"
+    
+    ID = hashlib.sha256(input_str.encode()).hexdigest()
+    
+    item = {
+        'ID': {'S': ID},
+        'client': {'S': client},
+        'cpu_model': {'S': cpu_model},
+        'cpu_available': {'S': 'True' if cpu_count > 0 else 'False'},
+        'motherboard_model': {'S': motherboard_model},
+        'motherboard_available': {'S': 'True' if motherboard_count > 0 else 'False'},
+        'gpu_model': {'S': gpu_model},
+        'gpu_available': {'S': 'True' if gpu_count > 0 else 'False'},
+        'ram_model': {'S': ram_model},
+        'ram_available': {'S': 'True' if ram_count > 0 else 'False'},
+        'storage_drive_model': {'S': storage_drive_model},
+        'storage_drive_available': {'S': 'True' if storage_drive_count > 0 else 'False'},
+        'case_model': {'S': case_model},
+        'case_available': {'S': 'True' if case_count > 0 else 'False'},
+        'powersupply_model': {'S': powersupply_model},
+        'powersupply_available': {'S': 'True' if powersupply_count > 0 else 'False'},
+        'all_available': {'S': 'True' if all_available else 'False'}
+    }
+
+    insert_configuration(dynamodb,table,item)
+    
     return response
 
 
@@ -75,3 +121,11 @@ def get_item_count(dynamodb, table_name, model):
     
     # Return count as integer
     return int(count)
+
+def insert_configuration(dynamodb, table_name, item):
+    # Get item from DynamoDB table
+    # Insert the item into the table
+        response = dynamodb.put_item(
+        TableName=table_name,
+        Item=item)
+        print(response)

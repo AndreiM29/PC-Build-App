@@ -141,6 +141,7 @@ const CPUSelector = () => {
           </Table>
         </TableContainer>
       </div>
+      <div><p>&nbsp;&nbsp;</p></div>
     </div>
   );
 };
