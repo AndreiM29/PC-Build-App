@@ -93,8 +93,8 @@ const StorageDriveSelector = () => {
     <div class="flex-container">
       <div className="selector-container">
         <img src={storageImage} alt="Storage" style={{ width: '80px', height: '80px' }} />
-        <Typography variant="h4" className="selector-title">
-          Select your Storage Drive
+        <Typography variant="h5" className="selector-title">
+          Select Storage Drive
         </Typography>
         <Typography variant="body1">Selected Storage Drive: {selectedStorageDrive}</Typography>
         {modelsFetched && (
