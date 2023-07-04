@@ -7,8 +7,8 @@ import './Configuration.css';
 
 
 const ConfigurationDisplay = () => {
-    
-    const [token, setAccessToken] = useState('');
+
+  const [token, setAccessToken] = useState('');
   useEffect(() => {
     Auth.currentSession().then(res => {
       let accessToken = res.getAccessToken();
@@ -34,15 +34,15 @@ const ConfigurationDisplay = () => {
     const storedStorage = localStorage.getItem("selectedStorageDrive");
     const storedPowerSupply = localStorage.getItem("selectedPowerSupply");
     const storedCase = localStorage.getItem("selectedCase");
-    
+
     setConfig({
-    motherboard_model: storedMotherboard ||"",
-      cpu_model: storedCPU ||"",
-      gpu_model: storedGPU ||"",
-      ram_model: storedRAM ||"",
-      storage_drive_model: storedStorage ||"" ,
-      powersupply_model: storedPowerSupply ||"",
-      case_model:storedCase||"",
+      motherboard_model: storedMotherboard || "",
+      cpu_model: storedCPU || "",
+      gpu_model: storedGPU || "",
+      ram_model: storedRAM || "",
+      storage_drive_model: storedStorage || "",
+      powersupply_model: storedPowerSupply || "",
+      case_model: storedCase || "",
     });
   }, []);
 
@@ -52,7 +52,8 @@ const ConfigurationDisplay = () => {
       method: 'POST',
       body: JSON.stringify({ pc_configuration: config, client: 'Andrei1' }),
       headers: {
-        'Authorization': `Bearer ${token}`      }
+        'Authorization': `Bearer ${token}`
+      }
     })
       .then(response => {
         if (response.ok) {
@@ -63,27 +64,27 @@ const ConfigurationDisplay = () => {
         }
       })
       .then(data => {
-        if (data.all_available == false){
+        if (data.all_available == false) {
           toast.info("Not all the componts are present in the local database, but we are proceeding with the provisioning.")
         }
-        else{
+        else {
           toast.success("All the component are available in the local database!");
         }
-        console.log(data)})
+        console.log(data)
+      })
       .catch(error => console.error(error));
   }
 
   return (
-    <div className="config-display">
-      <h2>Your current configuration:</h2>
-      <p>Motherboard: {config.motherboard_model}</p>
-      <p>CPU: {config.cpu_model}</p>
-      <p>GPU: {config.gpu_model}</p>
-      <p>RAM: {config.ram_model}</p>
-      <p>Storage: {config.storage_drive_model}</p>
-      <p>Power Supply: {config.powersupply_model}</p>
-      <p>Case: {config.case_model}</p>
-      <br />
+    <div className="config-display" style={{ fontFamily: 'Arial, sans-serif', padding: '10px' }}>
+      <h2 style={{ color: '#333' }}>Your current configuration:</h2>
+      <p style={{ marginBottom: '5px' }}>Motherboard: {config.motherboard_model}</p>
+      <p style={{ marginBottom: '5px' }}>CPU: {config.cpu_model}</p>
+      <p style={{ marginBottom: '5px' }}>GPU: {config.gpu_model}</p>
+      <p style={{ marginBottom: '5px' }}>RAM: {config.ram_model}</p>
+      <p style={{ marginBottom: '5px' }}>Storage: {config.storage_drive_model}</p>
+      <p style={{ marginBottom: '5px' }}>Power Supply: {config.powersupply_model}</p>
+      <p style={{ marginBottom: '5px' }}>Case: {config.case_model}</p>
       <Button
         variant="contained"
         color="primary"

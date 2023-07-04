@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Auth } from 'aws-amplify';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import CancelIcon from '@material-ui/icons/Cancel';
+
+
 
 
 function Configurations() {
@@ -45,26 +49,26 @@ function Configurations() {
 
     return (
         <TableContainer component={Paper}>
-            <Table>
+            <Table size="small">
                 <TableHead>
                     <TableRow>
                         <TableCell>ID</TableCell>
                         <TableCell>Client</TableCell>
                         <TableCell>CPU Model</TableCell>
-                        <TableCell>CPU Available</TableCell>
+                        <TableCell style={{ paddingLeft: '0px' }}>Ready</TableCell>
                         <TableCell>GPU Model</TableCell>
-                        <TableCell>GPU Available</TableCell>
+                        <TableCell style={{ paddingLeft: '0px' }}>Ready</TableCell>
                         <TableCell>RAM Model</TableCell>
-                        <TableCell>RAM Available</TableCell>
+                        <TableCell style={{ paddingLeft: '0px' }}>Ready</TableCell>
                         <TableCell>Motherboard Model</TableCell>
-                        <TableCell>Motherboard Available</TableCell>
+                        <TableCell style={{ paddingLeft: '0px' }}>Ready</TableCell>
                         <TableCell>Storage Drive Model</TableCell>
-                        <TableCell>Storage Drive Available</TableCell>
+                        <TableCell style={{ paddingLeft: '0px' }}>Ready</TableCell>
                         <TableCell>Power Supply Model</TableCell>
-                        <TableCell>Power Supply Available</TableCell>
+                        <TableCell style={{ paddingLeft: '0px' }}>Ready</TableCell>
                         <TableCell>Case Model</TableCell>
-                        <TableCell>Case Available</TableCell>
-                        <TableCell>All Available</TableCell>
+                        <TableCell style={{ paddingLeft: '0px' }}>Ready</TableCell>
+                        <TableCell style={{ paddingLeft: '0px' , paddingRight: '0px'}}>All Available</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -73,20 +77,52 @@ function Configurations() {
                             <TableCell>{index  + 1}</TableCell>
                             <TableCell>{item.client}</TableCell>
                             <TableCell>{item.cpu_model}</TableCell>
-                            <TableCell>{item.cpu_available}</TableCell>
+                            <TableCell style={{ paddingLeft: '0px' }}>{item.cpu_available == 'True' ? (
+                  <CheckCircleIcon style={{ color: 'green' }} />
+                ) : (
+                    <CancelIcon style={{ color: 'red' }} />
+                  )}</TableCell>
                             <TableCell>{item.gpu_model}</TableCell>
-                            <TableCell>{item.gpu_available}</TableCell>
+                            <TableCell style={{ paddingLeft: '0px' }}>{item.gpu_available == 'True' ? (
+                  <CheckCircleIcon style={{ color: 'green' }} />
+                ) : (
+                    <CancelIcon style={{ color: 'red' }} />
+                  )}</TableCell>
                             <TableCell>{item.ram_model}</TableCell>
-                            <TableCell>{item.ram_available}</TableCell>
+                            <TableCell style={{ paddingLeft: '0px' }}>{item.ram_available == 'True' ? (
+                  <CheckCircleIcon style={{ color: 'green' }} />
+                ) : (
+                    <CancelIcon style={{ color: 'red' }} />
+                  )}</TableCell>
                             <TableCell>{item.motherboard_model}</TableCell>
-                            <TableCell>{item.motherboard_available}</TableCell>
+                            <TableCell style={{ paddingLeft: '0px' }}>{item.motherboard_available == 'True' ? (
+                  <CheckCircleIcon style={{ color: 'green' }} />
+                ) : (
+                    <CancelIcon style={{ color: 'red' }} />
+                  )}</TableCell>
                             <TableCell>{item.storage_drive_model}</TableCell>
-                            <TableCell>{item.storage_drive_available}</TableCell>
+                            <TableCell style={{ paddingLeft: '0px' }}>{item.storage_drive_available == 'True' ? (
+                  <CheckCircleIcon style={{ color: 'green' }} />
+                ) : (
+                    <CancelIcon style={{ color: 'red' }} />
+                  )}</TableCell>
                             <TableCell>{item.powersupply_model}</TableCell>
-                            <TableCell>{item.powersupply_available}</TableCell>
+                            <TableCell style={{ paddingLeft: '0px' }}>{item.powersupply_available == 'True' ? (
+                  <CheckCircleIcon style={{ color: 'green' }} />
+                ) : (
+                    <CancelIcon style={{ color: 'red' }} />
+                  )}</TableCell>
                             <TableCell>{item.case_model}</TableCell>
-                            <TableCell>{item.case_available}</TableCell>
-                            <TableCell>{item.all_available}</TableCell>
+                            <TableCell style={{ paddingLeft: '0px' }}>{item.case_available == 'True' ? (
+                  <CheckCircleIcon style={{ color: 'green' }} />
+                ) : (
+                    <CancelIcon style={{ color: 'red' }} />
+                  )}</TableCell>
+                            <TableCell style={{ paddingLeft: '0px', paddingRight: '0px' }}>{item.all_available == 'True' ? (
+                  <CheckCircleIcon style={{ color: 'green' }} />
+                ) : (
+                    <CancelIcon style={{ color: 'red' }} />
+                  )}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

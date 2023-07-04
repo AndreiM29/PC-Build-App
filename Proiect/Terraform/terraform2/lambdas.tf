@@ -135,6 +135,12 @@ resource "aws_iam_role_policy_attachment" "attach_policies" {
   policy_arn = each.key
 }
 
+data "archive_file" "zip_the_python_code_resolve_stock_lambda" {
+  type        = "zip"
+  source_dir  = "${path.module}/resolveStock"
+  output_path = "${path.module}/python/resolve-stock.zip"
+}
+
 data "archive_file" "zip_the_python_code_first_lambda" {
   type        = "zip"
   source_dir  = "${path.module}/firstLambda"
@@ -163,6 +169,21 @@ data "archive_file" "zip_the_python_code_maf_get_configurations" {
   type        = "zip"
   source_dir  = "${path.module}/getConfigurations"
   output_path = "${path.module}/python/maf_get_configurations.zip"
+}
+
+resource "aws_lambda_function" "maf_resolve_stock" {
+  filename         = "${path.module}/python/resolve-stock.zip"
+  function_name    = "ResolveStock"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "resolveStock.lambda_handler"
+  runtime          = "python3.8"
+  source_code_hash = data.archive_file.zip_the_python_code.output_base64sha256 # for updates
+  depends_on       = [aws_iam_role_policy_attachment.attach_policies]
+  environment {
+    variables = {
+      phone_nr = "+40758949055",
+    }
+  }
 }
 
 resource "aws_lambda_function" "terraform_lambda_func" {

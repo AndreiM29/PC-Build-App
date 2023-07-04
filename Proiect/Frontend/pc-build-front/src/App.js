@@ -43,7 +43,7 @@ function App({ signOut, user }) {
     setFoo('foo value');
   }, []);
 
-
+/*
   useEffect(() => {
     if (foo === 'foo value') {
       const client = 'Clientu';
@@ -71,29 +71,29 @@ function App({ signOut, user }) {
         .catch(error => console.error(error))
     }
   })
-
+*/
 
   return (
     <>
-    <ToastContainer />
-      <h1>Hi {user.username}</h1>
-      <Box
-         position="fixed"
-         top={0}
-         right={0}
-         zIndex={9999}
-         p={2}
-      >
-        <Button
-          variant="contained"
-          color="secondary"
-          startIcon={<ExitToAppIcon />}
-          onClick={signOut}
+      <ToastContainer />
+      <div style={{ position: 'absolute', top: 15, right: 10 }}>
+        <Box
+          position="fixed"
+          top={0}
+          right={0}
+          zIndex={9999}
+          p={2}
         >
-          Sign Out
-        </Button>
-      </Box>
-
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<ExitToAppIcon />}
+            onClick={signOut}
+          >
+            Sign Out
+          </Button>
+        </Box>
+      </div>
       <Router>
         <div>
           <Menu />
@@ -101,19 +101,22 @@ function App({ signOut, user }) {
           <Routes>
             <Route exact path="/" element={<HomePage />} />
             <Route path="/motherboards" element={<MotherboardSelector />} />
-            <Route path="/cases" element={<CaseSelector/>} />
-            <Route path="/cpus" element={<CPUSelector/>} />
-            <Route path="/gpus" element={<GPUSelector/>} />
-            <Route path="/ram" element={<RAMSelector/>} />
-            <Route path="/storagedrive" element={<StorageDriveSelector/>} />
-            <Route path="/powersupply" element={<PowerSupplySelector/>} />
-            <Route path="/configuration" element={<ConfigurationDisplay/>} />
-            <Route path="/configurations" element={<Configurations/>} />
+            <Route path="/cases" element={<CaseSelector />} />
+            <Route path="/cpus" element={<CPUSelector />} />
+            <Route path="/gpus" element={<GPUSelector />} />
+            <Route path="/ram" element={<RAMSelector />} />
+            <Route path="/storagedrive" element={<StorageDriveSelector />} />
+            <Route path="/powersupply" element={<PowerSupplySelector />} />
+            <Route path="/configuration" element={<ConfigurationDisplay />} />
+            <Route path="/configurations" element={<Configurations />} />
             {/* Add more routes for other pages/components as needed */}
           </Routes>
         </div>
       </Router>
     </>
   );
+
+
+
 }
 export default withAuthenticator(App);
