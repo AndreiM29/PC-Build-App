@@ -6,6 +6,8 @@ The users can log in, select a bunch of components to be added to his configurat
 
 The components the user seeks may be found in the local database or not. If all of the components aren't found, a message is published to an SNS topic to inform the suppliers of the missing stock, which connect to the broader system using SQS queues.
 
+For any order that takes a while the user can be notified via SMS when the missing compoents are received.
+
 
 ![image](https://github.com/AndreiM29/PC-Build-App/assets/72067795/25cb7fdd-b6eb-49c9-a81e-3e7f4856d6a9)
 
