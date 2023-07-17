@@ -6,10 +6,9 @@ The users can log in, select a bunch of components to be added to his configurat
 
 The components the user seeks may be found in the local database or not. If all of the components aren't found, a message is published to an SNS topic to inform the suppliers of the missing stock, which connect to the broader system using SQS queues.
 
-![image](https://github.com/AndreiM29/PC-Build-App/assets/72067795/25cb7fdd-b6eb-49c9-a81e-3e7f4856d6a9)
-
 *A Look inside the Application*
 
+![image](https://github.com/AndreiM29/PC-Build-App/assets/72067795/25cb7fdd-b6eb-49c9-a81e-3e7f4856d6a9)
 
 ![system](https://github.com/AndreiM29/PC-Build-App/assets/72067795/8b776ba2-4f8b-4dcb-ace3-f3a2e12f51bf)
 
