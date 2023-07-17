@@ -31,5 +31,11 @@ The components the user seeks may be found in the local database or not. If all 
 *A notification indicating that the components have been sent in the PC-Build-App.*
 
 
+![image](https://github.com/AndreiM29/PC-Build-App/assets/72067795/43476eb8-9a26-44be-8a39-cb697dce923a)
+
+*The page with all of the Configurations.*
+
+
+
 
 
