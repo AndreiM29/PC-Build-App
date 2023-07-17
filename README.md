@@ -8,7 +8,7 @@ The components the user seeks may be found in the local database or not. If all 
 
 ![image](https://github.com/AndreiM29/PC-Build-App/assets/72067795/25cb7fdd-b6eb-49c9-a81e-3e7f4856d6a9)
 
-*A Look inside the Application*"
+*A Look inside the Application*
 
 ![system](https://github.com/AndreiM29/PC-Build-App/assets/72067795/8b776ba2-4f8b-4dcb-ace3-f3a2e12f51bf)
 
@@ -28,5 +28,7 @@ The components the user seeks may be found in the local database or not. If all 
 
 ![sentc](https://github.com/AndreiM29/PC-Build-App/assets/72067795/c220c764-2814-49b6-9aa5-c5f3c7e2f576)
 
-*An image indicating that the components have been sent in the PC-Build-App.*
+*A notification indicating that the components have been sent in the PC-Build-App.*
+
+
 
