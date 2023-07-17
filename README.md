@@ -7,7 +7,7 @@ suppliers.
 The users can log in, select a bunch of components to be added to his configuration and then send a request to the server to have the specific compoenets provisioned.
 
 The compoents the user seeks may be found in the local database or not, if all of the components aren't found a message is published to a SNS topic to inform the suppliers of the missing stock which connect to the broather system using SQS queues.
-![flow1](https://github.com/AndreiM29/PC-Build-App/assets/72067795/27b2d1b1-2737-4aab-a636-ea5e1405fa17 | width=300)
+![flow1](https://github.com/AndreiM29/PC-Build-App/assets/72067795/27b2d1b1-2737-4aab-a636-ea5e1405fa17)
 
 ![confirm1](https://github.com/AndreiM29/PC-Build-App/assets/72067795/d05d4c72-5ece-407b-935e-606362cac307)
 ![selector](https://github.com/AndreiM29/PC-Build-App/assets/72067795/3758c17d-838d-4563-8e42-c430e2ad2119)
