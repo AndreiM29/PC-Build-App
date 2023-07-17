@@ -13,7 +13,7 @@ The components the user seeks may be found in the local database or not. If all 
 
 ![system](https://github.com/AndreiM29/PC-Build-App/assets/72067795/8b776ba2-4f8b-4dcb-ace3-f3a2e12f51bf)
 
-*A visual representation of the system architecture in the PC-Build-App.*
+*The System Architecture in the PC-Build-App.*
 
 
 ![flow1](https://github.com/AndreiM29/PC-Build-App/assets/72067795/27b2d1b1-2737-4aab-a636-ea5e1405fa17)
@@ -33,7 +33,7 @@ The components the user seeks may be found in the local database or not. If all 
 
 ![image](https://github.com/AndreiM29/PC-Build-App/assets/72067795/43476eb8-9a26-44be-8a39-cb697dce923a)
 
-*The page with all of the Configurations.*
+*The page where the user can see all of the ordered Configurations.*
 
 
 
