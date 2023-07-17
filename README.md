@@ -9,7 +9,7 @@ The components the user seeks may be found in the local database or not. If all 
 ![flow1](https://github.com/AndreiM29/PC-Build-App/raw/main/assets/72067795/27b2d1b1-2737-4aab-a636-ea5e1405fa17.png)
 *A visual representation of the flow within the PC-Build-App.*
 
-![confirm1](https://github.com/AndreiM29/PC-Build-App/raw/main/assets/72067795/d05d4c72-5ece-407b-935e-606362cac307.png)
+![confirm1](https://github.com/AndreiM29/PC-Build-App/assets/72067795/d05d4c72-5ece-407b-935e-606362cac307)
 *An image showing the confirmation step in the PC-Build-App.*
 
 ![selector](https://github.com/AndreiM29/PC-Build-App/raw/main/assets/72067795/3758c17d-838d-4563-8e42-c430e2ad2119.png)
