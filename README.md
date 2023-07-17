@@ -1,4 +1,4 @@
-"# PC-Build-App
+# PC-Build-App
 
 The purpose of this application is to aid the user in building his own PC, giving him access to a large database of components and an ever-expanding network of suppliers.
 
